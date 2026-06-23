@@ -4,3 +4,6 @@ CREATE TABLE IF NOT EXISTS deadlock (
   character TEXT NOT NULL,
   tier CHAR(1) NOT NULL CHECK (tier IN ('D', 'C', 'B', 'A', 'S', 'Z'))
 );
+
+--@block
+SELECT * FROM deadlock;

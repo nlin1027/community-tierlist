@@ -1,0 +1,55 @@
+.rank-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  padding: 24px;
+  font-family: system-ui, sans-serif;
+}
+
+.rank-form .field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rank-form label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+}
+
+.rank-form input,
+.rank-form select {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.rank-form button {
+  padding: 9px 18px;
+  border: none;
+  border-radius: 6px;
+  background: #6b3bff;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.rank-form button:hover {
+  background: #5a2fe0;
+}
+
+.rank-form .status {
+  margin: 0;
+  font-size: 14px;
+}
+
+.rank-form .status.ok {
+  color: #1a7f37;
+}
+
+.rank-form .status.error {
+  color: #d1242f;
+}
