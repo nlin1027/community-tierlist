@@ -44,6 +44,10 @@ const HEROES = [
 
 const TIERS = ['Z', 'S', 'A', 'B', 'C', 'D'];
 
+const API_URL = import.meta.env.PROD
+  ? import.meta.env.VITE_API_URL_PROD
+  : import.meta.env.VITE_API_URL_LOCAL;
+
 function App() {
   const [user, setUser] = useState('');
   const [character, setCharacter] = useState(HEROES[0]);
@@ -55,7 +59,7 @@ function App() {
     setStatus(null);
 
     try {
-      const res = await fetch('http://localhost:3000/submit_character', {
+      const res = await fetch(`${API_URL}/submit_character`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user, character, tier }),
