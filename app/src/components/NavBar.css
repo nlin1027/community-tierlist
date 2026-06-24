@@ -1,0 +1,25 @@
+.navbar {
+  display: flex;
+  gap: 24px;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e5e4e7;
+  font-family: system-ui, sans-serif;
+}
+
+.navlink {
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  color: #6b6375;
+  padding: 6px 0;
+  border-bottom: 2px solid transparent;
+}
+
+.navlink:hover {
+  color: #222;
+}
+
+.navlink.active {
+  color: #6b3bff;
+  border-bottom-color: #6b3bff;
+}

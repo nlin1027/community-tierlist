@@ -1,0 +1,74 @@
+.docs {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px;
+  font-family: system-ui, sans-serif;
+  color: #222;
+}
+
+.docs h1 {
+  font-size: 26px;
+  margin-bottom: 8px;
+}
+
+.docs h2 {
+  font-size: 19px;
+  margin-top: 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.docs h3 {
+  font-size: 15px;
+  margin-top: 18px;
+}
+
+.docs .method {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  color: white;
+}
+
+.docs .method.post {
+  background: #6b3bff;
+}
+
+.docs .method.get {
+  background: #1a7f37;
+}
+
+.docs table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.docs th,
+.docs td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid #e5e4e7;
+}
+
+.docs pre {
+  background: #f4f3ec;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  overflow-x: auto;
+}
+
+.docs code {
+  background: #f4f3ec;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.docs ul {
+  font-size: 14px;
+  padding-left: 20px;
+}
