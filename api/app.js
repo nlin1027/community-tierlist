@@ -27,10 +27,16 @@ app.post('/submit_character', async (req, res) => {
     return res.status(400).json({ error: 'tier must be one of D, C, B, A, S, Z' });
   }
 
-  const result = await pool.query(
-    'INSERT INTO deadlock ("user", character, tier) VALUES ($1, $2, $3) RETURNING *',
-    [user, character, tier]
-  );
+  let result;
+  try {
+    result = await pool.query(
+      'INSERT INTO deadlock ("user", character, tier) VALUES ($1, $2, $3) RETURNING *',
+      [user, character, tier]
+    );
+  }
+  catch {
+    return res.status(500).json({ error: 'query failed' });
+  }
 
   res.status(201).json(result.rows[0]);
 });
@@ -44,10 +50,16 @@ app.get('/:character', async (req, res) => {
 
   const tierValues = { D: 1, C: 2, B: 3, A: 4, S: 5, Z: 6 };
 
-  const result = await pool.query(
-    'SELECT tier FROM deadlock WHERE character = $1',
-    [character]
-  );
+  let result;
+  try {
+    result = await pool.query(
+      'SELECT tier FROM deadlock WHERE character = $1',
+      [character]
+    );
+  }
+  catch {
+    return res.status(500).json({ error: 'query failed' });
+  }
 
   if (result.rows.length === 0) {
     return res.status(404).json({ error: 'no rankings found for this character' });
