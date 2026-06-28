@@ -4,6 +4,7 @@ const pool = require('./db');
 const HEROES = require('./heroes');
 
 const VALID_TIERS = ['D', 'C', 'B', 'A', 'S', 'Z'];
+const USERNAME_PATTERN = /^[a-zA-Z0-9]{3,20}$/;
 
 const app = express();
 
@@ -17,8 +18,8 @@ app.get('/health', (req, res) => {
 app.post('/submit_character', async (req, res) => {
   const { user, character, tier } = req.body;
 
-  if (typeof user !== 'string' || !user.trim()) {
-    return res.status(400).json({ error: 'user is required' });
+  if (typeof user !== 'string' || !USERNAME_PATTERN.test(user)) {
+    return res.status(400).json({ error: 'user must be 3-20 alphanumeric characters' });
   }
   if (!HEROES.includes(character)) {
     return res.status(400).json({ error: 'character must be one of the 38 valid Deadlock heroes' });

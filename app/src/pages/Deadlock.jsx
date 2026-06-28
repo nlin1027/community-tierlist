@@ -48,6 +48,8 @@ const API_URL = import.meta.env.PROD
   ? import.meta.env.VITE_API_URL_PROD
   : import.meta.env.VITE_API_URL_LOCAL;
 
+const USERNAME_PATTERN = /^[a-zA-Z0-9]{3,20}$/;
+
 function RankHero() {
   const [user, setUser] = useState('');
   const [character, setCharacter] = useState(HEROES[0]);
@@ -57,6 +59,14 @@ function RankHero() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus(null);
+
+    if (!USERNAME_PATTERN.test(user)) {
+      setStatus({
+        ok: false,
+        message: 'User must be 3-20 characters and contain only letters and numbers',
+      });
+      return;
+    }
 
     try {
       const res = await fetch(`${API_URL}/submit_character`, {
@@ -87,6 +97,10 @@ function RankHero() {
           type="text"
           value={user}
           onChange={(e) => setUser(e.target.value)}
+          minLength={3}
+          maxLength={20}
+          pattern="[a-zA-Z0-9]+"
+          title="3-20 characters: letters and numbers only"
           required
         />
       </div>
