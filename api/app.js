@@ -42,7 +42,40 @@ app.post('/submit_character', async (req, res) => {
 });
 
 app.post('/submit_list', async (req, res) => {
-  return;
+  const { user, rankings } = req.body;
+
+  if (typeof user !== 'string' || !USERNAME_PATTERN.test(user)) {
+    return res.status(400).json({ error: 'user must be 3-20 alphanumeric characters' });
+  }
+  if (!Array.isArray(rankings) || rankings.length === 0) {
+    return res.status(400).json({ error: 'rankings must be a non-empty array' });
+  }
+
+  for (const { character, tier } of rankings) {
+    if (!HEROES.includes(character)) {
+      return res.status(400).json({ error: `invalid character: ${character}` });
+    }
+    if (!VALID_TIERS.includes(tier)) {
+      return res.status(400).json({ error: `invalid tier for ${character}: ${tier}` });
+    }
+  }
+
+  const values = [];
+  const placeholders = rankings.map(({ character, tier }, i) => {
+    values.push(user, character, tier);
+    return `($${i * 3 + 1}, $${i * 3 + 2}, $${i * 3 + 3})`;
+  });
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO deadlock ("user", character, tier) VALUES ${placeholders.join(', ')} RETURNING *`,
+      values
+    );
+    res.status(201).json(result.rows);
+  }
+  catch {
+    return res.status(500).json({ error: 'query failed' });
+  }
 });
 
 app.get('/:character', async (req, res) => {
@@ -65,7 +98,6 @@ app.get('/:character', async (req, res) => {
     }
 
     const average = result.rows.reduce((sum, row) => sum + tierValues[row.tier], 0) / result.rows.length;
-
     res.json({ character, average_tier: average, count: result.rows.length });
   }
   catch {
