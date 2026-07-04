@@ -7,7 +7,7 @@
             "port": 5432,
             "driver": "PostgreSQL",
             "name": "tierlistconnection",
-            "database": "tierlistdb",
+            "database": "communitytierlist",
             "username": "postgres"
         }
     ]

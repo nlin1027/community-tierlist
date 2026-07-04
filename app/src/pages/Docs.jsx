@@ -48,6 +48,9 @@ function Docs() {
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ user: 'nathan', character: 'Seven', tier: 'Z' }),
 });`}</pre>
+        <pre>{`curl -X POST https://community-tierlist-api.onrender.com/submit_character \\
+  -H "Content-Type: application/json" \\
+  -d '{"user": "nathan", "character": "Seven", "tier": "Z"}'`}</pre>
 
         <h3>Responses</h3>
         <ul>
@@ -107,6 +110,15 @@ function Docs() {
     ],
   }),
 });`}</pre>
+        <pre>{`curl -X POST https://community-tierlist-api.onrender.com/submit_list \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "user": "nathan",
+    "rankings": [
+      { "character": "Seven", "tier": "Z" },
+      { "character": "Haze", "tier": "S" }
+    ]
+  }'`}</pre>
 
         <h3>Responses</h3>
         <ul>
@@ -142,6 +154,7 @@ function Docs() {
 
         <h3>Example</h3>
         <pre>{`fetch('https://community-tierlist-api.onrender.com/Seven');`}</pre>
+        <pre>{`curl https://community-tierlist-api.onrender.com/Seven`}</pre>
 
         <h3>Response</h3>
         <pre>{`{
