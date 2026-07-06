@@ -52,10 +52,49 @@ function Docs() {
   -H "Content-Type: application/json" \\
   -d '{"user": "nathan", "character": "Seven", "tier": "Z"}'`}</pre>
 
+        <h3>Response body</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>id</td>
+              <td>integer</td>
+              <td>Auto-generated row ID</td>
+            </tr>
+            <tr>
+              <td>user</td>
+              <td>string</td>
+              <td>Name of the user who submitted the ranking</td>
+            </tr>
+            <tr>
+              <td>character</td>
+              <td>string</td>
+              <td>One of the 38 valid Deadlock heroes</td>
+            </tr>
+            <tr>
+              <td>tier</td>
+              <td>string</td>
+              <td>One of: Z, S, A, B, C, D</td>
+            </tr>
+            <tr>
+              <td>date</td>
+              <td>string</td>
+              <td>Timestamp the row was inserted</td>
+            </tr>
+          </tbody>
+        </table>
+
         <h3>Responses</h3>
         <ul>
           <li><code>201</code> — returns the inserted row</li>
           <li><code>400</code> — invalid user, character, or tier</li>
+          <li><code>500</code> — query failed</li>
         </ul>
       </section>
 
@@ -120,6 +159,45 @@ function Docs() {
     ]
   }'`}</pre>
 
+        <h3>Response body</h3>
+        <p>Array of inserted rows, each with the following fields:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>id</td>
+              <td>integer</td>
+              <td>Auto-generated row ID</td>
+            </tr>
+            <tr>
+              <td>user</td>
+              <td>string</td>
+              <td>Name of the user who submitted the rankings</td>
+            </tr>
+            <tr>
+              <td>character</td>
+              <td>string</td>
+              <td>One of the 38 valid Deadlock heroes</td>
+            </tr>
+            <tr>
+              <td>tier</td>
+              <td>string</td>
+              <td>One of: Z, S, A, B, C, D</td>
+            </tr>
+            <tr>
+              <td>date</td>
+              <td>string</td>
+              <td>Timestamp the row was inserted</td>
+            </tr>
+          </tbody>
+        </table>
+
         <h3>Responses</h3>
         <ul>
           <li><code>201</code> — returns an array of all inserted rows</li>
@@ -156,11 +234,39 @@ function Docs() {
         <pre>{`fetch('https://community-tierlist-api.onrender.com/Seven');`}</pre>
         <pre>{`curl https://community-tierlist-api.onrender.com/Seven`}</pre>
 
+        <h3>Response body</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>character</td>
+              <td>string</td>
+              <td>The requested hero</td>
+            </tr>
+            <tr>
+              <td>average_tier</td>
+              <td>string</td>
+              <td>Average tier value (1–6) across all submissions</td>
+            </tr>
+            <tr>
+              <td>count</td>
+              <td>string</td>
+              <td>Number of submissions for this hero</td>
+            </tr>
+          </tbody>
+        </table>
+
         <h3>Response</h3>
         <pre>{`{
   "character": "Seven",
-  "average_tier": 6,
-  "count": 1
+  "average_tier": "6.0000000000000000",
+  "count": "1"
 }`}</pre>
 
         <h3>Responses</h3>
@@ -168,6 +274,7 @@ function Docs() {
           <li><code>200</code> — average tier and submission count</li>
           <li><code>400</code> — invalid character</li>
           <li><code>404</code> — no rankings found for this character</li>
+          <li><code>500</code> — query failed</li>
         </ul>
       </section>
     </div>

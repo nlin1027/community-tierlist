@@ -85,20 +85,24 @@ app.get('/:character', async (req, res) => {
     return res.status(400).json({ error: 'character must be one of the 38 valid Deadlock heroes' });
   }
 
-  const tierValues = { D: 1, C: 2, B: 3, A: 4, S: 5, Z: 6 };
-
   try {
     let result = await pool.query(
-      'SELECT tier FROM deadlock WHERE character = $1',
+      `SELECT
+        COUNT(*) AS count,
+        AVG(CASE tier
+          WHEN 'D' THEN 1 WHEN 'C' THEN 2 WHEN 'B' THEN 3
+          WHEN 'A' THEN 4 WHEN 'S' THEN 5 WHEN 'Z' THEN 6
+        END) AS average_tier
+      FROM deadlock
+      WHERE character = $1`,
       [character]
     );
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'no rankings found for this character' });
+    if (result.rows[0].count === '0') {
+      return res.status(404).json({ error: "No rankings found for specific hero" });
     }
 
-    const average = result.rows.reduce((sum, row) => sum + tierValues[row.tier], 0) / result.rows.length;
-    res.json({ character, average_tier: average, count: result.rows.length });
+    res.json({ character, average_tier: result.rows[0].average_tier, count: result.rows[0].count });
   }
   catch {
     return res.status(500).json({ error: 'query failed' });
