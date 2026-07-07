@@ -78,7 +78,7 @@ app.post('/submit_list', async (req, res) => {
   }
 });
 
-app.get('/:character', async (req, res) => {
+app.get('/get_character/:character', async (req, res) => {
   const { character } = req.params;
 
   if (!HEROES.includes(character)) {
@@ -106,6 +106,38 @@ app.get('/:character', async (req, res) => {
   }
   catch {
     return res.status(500).json({ error: 'query failed' });
+  }
+});
+
+app.get('/average_list', async (req, res) => {
+  try {
+    const default_list = new Map(HEROES.map(character => [character, {character, average_tier: null, count: 0}]));
+
+    let result = await pool.query(
+      `SELECT
+        character,
+        COUNT(*) AS count,
+        AVG(CASE tier
+          WHEN 'D' THEN 1 WHEN 'C' THEN 2 WHEN 'B' THEN 3
+          WHEN 'A' THEN 4 WHEN 'S' THEN 5 WHEN 'Z' THEN 6
+        END) AS average_tier
+      FROM deadlock
+      GROUP BY character
+      ORDER BY character;`
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "No characters have been ranked" });
+    }
+
+    for (const row of result.rows) {
+      default_list.set(row.character, row);
+    }
+
+    return res.json([...default_list.values()]);
+  }
+  catch {
+    return res.status(500).json({ error: "Query failed" });
   }
 });
 

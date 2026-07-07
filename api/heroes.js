@@ -21,7 +21,7 @@ const HEROES = [
   'Mcginnis',
   'Mina',
   'Mirage',
-  'Mo & Krill',
+  'Mo and Krill',
   'Paige',
   'Paradox',
   'Pocket',

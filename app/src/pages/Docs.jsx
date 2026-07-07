@@ -208,7 +208,7 @@ function Docs() {
 
       <section>
         <h2>
-          <span className="method get">GET</span> /:character
+          <span className="method get">GET</span> /get_character/:character
         </h2>
         <p>Returns the average tier ranking for a specific hero.</p>
 
@@ -231,8 +231,8 @@ function Docs() {
         </table>
 
         <h3>Example</h3>
-        <pre>{`fetch('https://community-tierlist-api.onrender.com/Seven');`}</pre>
-        <pre>{`curl https://community-tierlist-api.onrender.com/Seven`}</pre>
+        <pre>{`fetch('https://community-tierlist-api.onrender.com/get_character/Seven');`}</pre>
+        <pre>{`curl https://community-tierlist-api.onrender.com/get_character/Seven`}</pre>
 
         <h3>Response body</h3>
         <table>
@@ -274,6 +274,60 @@ function Docs() {
           <li><code>200</code> — average tier and submission count</li>
           <li><code>400</code> — invalid character</li>
           <li><code>404</code> — no rankings found for this character</li>
+          <li><code>500</code> — query failed</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>
+          <span className="method get">GET</span> /average_list
+        </h2>
+        <p>Returns the average tier ranking for every hero. Heroes with no submissions are still included, with a <code>null</code> average.</p>
+
+        <h3>Example</h3>
+        <pre>{`fetch('https://community-tierlist-api.onrender.com/average_list');`}</pre>
+        <pre>{`curl https://community-tierlist-api.onrender.com/average_list`}</pre>
+
+        <h3>Response body</h3>
+        <p>Array of one entry per hero (38 total):</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>character</td>
+              <td>string</td>
+              <td>Hero name</td>
+            </tr>
+            <tr>
+              <td>average_tier</td>
+              <td>string | null</td>
+              <td>Average tier value (1–6); <code>null</code> if the hero has no submissions</td>
+            </tr>
+            <tr>
+              <td>count</td>
+              <td>string | number</td>
+              <td>Number of submissions for this hero; <code>0</code> if the hero has no submissions</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Response</h3>
+        <pre>{`[
+  { "character": "Abrams", "average_tier": null, "count": 0 },
+  { "character": "Haze", "average_tier": "5.2000000000000000", "count": "5" },
+  { "character": "Seven", "average_tier": "6.0000000000000000", "count": "1" }
+]`}</pre>
+
+        <h3>Responses</h3>
+        <ul>
+          <li><code>200</code> — average tier and submission count for all heroes</li>
+          <li><code>404</code> — no characters have been ranked</li>
           <li><code>500</code> — query failed</li>
         </ul>
       </section>
