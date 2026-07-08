@@ -311,15 +311,15 @@ function Docs() {
             </tr>
             <tr>
               <td>count</td>
-              <td>string | number</td>
-              <td>Number of submissions for this hero; <code>0</code> if the hero has no submissions</td>
+              <td>string</td>
+              <td>Number of submissions for this hero; <code>"0"</code> if the hero has no submissions</td>
             </tr>
           </tbody>
         </table>
 
         <h3>Response</h3>
         <pre>{`[
-  { "character": "Abrams", "average_tier": null, "count": 0 },
+  { "character": "Abrams", "average_tier": null, "count": "0" },
   { "character": "Haze", "average_tier": "5.2000000000000000", "count": "5" },
   { "character": "Seven", "average_tier": "6.0000000000000000", "count": "1" }
 ]`}</pre>

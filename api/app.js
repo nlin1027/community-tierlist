@@ -111,7 +111,7 @@ app.get('/get_character/:character', async (req, res) => {
 
 app.get('/average_list', async (req, res) => {
   try {
-    const default_list = new Map(HEROES.map(character => [character, {character, average_tier: null, count: 0}]));
+    const default_list = new Map(HEROES.map(character => [character, {character, average_tier: null, count: '0'}]));
 
     let result = await pool.query(
       `SELECT
