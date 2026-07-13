@@ -3,6 +3,19 @@
   font-family: system-ui, sans-serif;
 }
 
+.view-title {
+  margin: 0 0 4px;
+  font-size: 24px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.view-subtitle {
+  margin: 0 0 24px;
+  font-size: 14px;
+  color: #6b6375;
+}
+
 /* ── submit form ── */
 .rank-form {
   display: flex;

@@ -101,6 +101,9 @@ function DeadlockView() {
 
   return (
     <div className="deadlock-page">
+      <h1 className="view-title">Community Tierlist</h1>
+      <p className="view-subtitle">Average hero rankings based on user submissions</p>
+
       {error && <p className="status error">{error}</p>}
 
       {tierList && (
