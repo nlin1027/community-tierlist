@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import NavBar from './components/NavBar';
-import Deadlock from './pages/Deadlock';
+import DeadlockRank from './pages/deadlock-rank';
+import DeadlockView from './pages/deadlock-view';
 import Docs from './pages/Docs';
 
 function App() {
@@ -8,7 +9,9 @@ function App() {
     <>
       <NavBar />
       <Routes>
-        <Route path="/" element={<Deadlock />} />
+        <Route path="/" element={<DeadlockView />} />
+        <Route path="/deadlock-rank" element={<DeadlockRank />} />
+        <Route path="/deadlock-view" element={<DeadlockView />} />
         <Route path="/docs" element={<Docs />} />
       </Routes>
     </>
