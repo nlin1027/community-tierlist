@@ -2,11 +2,35 @@ const express = require('express');
 const cors = require('cors');
 const pool = require('./db');
 const HEROES = require('./heroes');
+const rateLimit = require('express-rate-limit');
+const { RedisStore } = require('rate-limit-redis');
+const redisClient = require('./redis');
 
 const VALID_TIERS = ['D', 'C', 'B', 'A', 'S', 'Z'];
 const USERNAME_PATTERN = /^[a-zA-Z0-9]{3,20}$/;
 
+function createLimiter({ windowMs, max, prefix }) {
+  return rateLimit({
+    windowMs, 
+    max, 
+    standardHeaders: true, 
+    legacyHeaders: false, 
+    message: { error: "too many requests, slow down" }, 
+    store: new RedisStore({
+      sendCommand: (...args) => redisClient.sendCommand(args),
+      prefix, 
+    }),
+  });
+}
+
+const submitCharacterLimiter = createLimiter({ windowMs: 60_000, max: 10, prefix: 'rl:submit-character:' });
+const submitListLimiter = createLimiter({ windowMs: 60_000, max: 3, prefix: 'rl:submit-list:' });
+const getCharacterLimiter = createLimiter({ windowMs: 60_000, max: 60, prefix: 'rl:get-character:' });
+const averageListLimiter = createLimiter({ windowMs: 60_000, max: 30, prefix: 'rl:average-list:' });
+
 const app = express();
+
+app.set('trust_proxy', 1);
 
 app.use(cors());
 app.use(express.json());
@@ -15,7 +39,7 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.post('/submit_character', async (req, res) => {
+app.post('/submit_character', submitCharacterLimiter, async (req, res) => {
   const { user, character, tier } = req.body;
 
   if (typeof user !== 'string' || !USERNAME_PATTERN.test(user)) {
@@ -41,7 +65,7 @@ app.post('/submit_character', async (req, res) => {
   }
 });
 
-app.post('/submit_list', async (req, res) => {
+app.post('/submit_list', submitListLimiter, async (req, res) => {
   const { user, rankings } = req.body;
 
   if (typeof user !== 'string' || !USERNAME_PATTERN.test(user)) {
@@ -78,7 +102,7 @@ app.post('/submit_list', async (req, res) => {
   }
 });
 
-app.get('/get_character/:character', async (req, res) => {
+app.get('/get_character/:character', getCharacterLimiter, async (req, res) => {
   const { character } = req.params;
 
   if (!HEROES.includes(character)) {
@@ -109,7 +133,7 @@ app.get('/get_character/:character', async (req, res) => {
   }
 });
 
-app.get('/average_list', async (req, res) => {
+app.get('/average_list', averageListLimiter, async (req, res) => {
   try {
     const default_list = new Map(HEROES.map(character => [character, {character, average_tier: null, count: '0'}]));
 
