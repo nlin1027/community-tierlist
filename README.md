@@ -5,7 +5,7 @@ A full-stack web app for crowdsourcing community tier list rankings for Valve's 
 **Live demo:** https://community-tierlist.onrender.com · **API:** https://community-tierlist-api.onrender.com
 
 ## Why I built this
-This application was built to teach myself system-design and full stack development. While the actual function and purpose of the application is not the most useful, it is meant to be treated as a real-world application with real users. Which is why it must be designed and developed in a manner that is secure, efficient, and intentional.
+Every Deadlock YouTuber and streamer puts out their own tier list, but there was no single place to see them all together. This app gives every opinion a home: submissions are stored individually so they can eventually be browsed one at a time (e.g. "what does this YouTuber think?"), and they're also aggregated in real time into one cohesive community tier list that reflects the consensus rather than any single voice.
 
 ## What it does
 - **Rank** — drag-and-drop tier list builder; assign each hero to a tier and submit in one request
