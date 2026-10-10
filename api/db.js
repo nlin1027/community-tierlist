@@ -1,18 +1,15 @@
+const fs = require('fs');
+const path = require('path');
 const { Pool } = require('pg');
 
-const isProduction = process.env.NODE_ENV === 'production';
+// Supabase's cert chain isn't in Node's trust store. Download the root cert
+// (Dashboard -> Database settings -> SSL) to api/certs/supabase-ca.crt.
+const caPath = path.join(__dirname, 'certs', 'supabase-ca.crt');
+const ca = fs.existsSync(caPath) ? fs.readFileSync(caPath, 'utf8') : undefined;
 
-const pool = isProduction
-  ? new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: true },
-    })
-  : new Pool({
-      host: process.env.PGHOST || 'localhost',
-      port: process.env.PGPORT || 5432,
-      user: process.env.PGUSER,
-      password: process.env.PGPASSWORD,
-      database: process.env.PGDATABASE,
-    });
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: true, ca },
+});
 
 module.exports = pool;
