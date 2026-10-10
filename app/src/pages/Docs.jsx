@@ -5,7 +5,7 @@ function Docs() {
     <div className="docs">
       <h1>API Documentation</h1>
       <p>
-        Base URL: <code>https://community-tierlist-api.onrender.com</code>
+        Base URL: <code>https://api--community-tierlist--xgjq82288nbr.code.run</code>
       </p>
 
       <section>
@@ -43,12 +43,12 @@ function Docs() {
         </table>
 
         <h3>Example</h3>
-        <pre>{`fetch('https://community-tierlist-api.onrender.com/submit_character', {
+        <pre>{`fetch('https://api--community-tierlist--xgjq82288nbr.code.run/submit_character', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ user: 'nathan', character: 'Seven', tier: 'Z' }),
 });`}</pre>
-        <pre>{`curl -X POST https://community-tierlist-api.onrender.com/submit_character \\
+        <pre>{`curl -X POST https://api--community-tierlist--xgjq82288nbr.code.run/submit_character \\
   -H "Content-Type: application/json" \\
   -d '{"user": "nathan", "character": "Seven", "tier": "Z"}'`}</pre>
 
@@ -138,7 +138,7 @@ function Docs() {
         </table>
 
         <h3>Example</h3>
-        <pre>{`fetch('https://community-tierlist-api.onrender.com/submit_list', {
+        <pre>{`fetch('https://api--community-tierlist--xgjq82288nbr.code.run/submit_list', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -149,7 +149,7 @@ function Docs() {
     ],
   }),
 });`}</pre>
-        <pre>{`curl -X POST https://community-tierlist-api.onrender.com/submit_list \\
+        <pre>{`curl -X POST https://api--community-tierlist--xgjq82288nbr.code.run/submit_list \\
   -H "Content-Type: application/json" \\
   -d '{
     "user": "nathan",
@@ -231,8 +231,8 @@ function Docs() {
         </table>
 
         <h3>Example</h3>
-        <pre>{`fetch('https://community-tierlist-api.onrender.com/get_character/Seven');`}</pre>
-        <pre>{`curl https://community-tierlist-api.onrender.com/get_character/Seven`}</pre>
+        <pre>{`fetch('https://api--community-tierlist--xgjq82288nbr.code.run/get_character/Seven');`}</pre>
+        <pre>{`curl https://api--community-tierlist--xgjq82288nbr.code.run/get_character/Seven`}</pre>
 
         <h3>Response body</h3>
         <table>
@@ -285,8 +285,8 @@ function Docs() {
         <p>Returns the average tier ranking for every hero. Heroes with no submissions are still included, with a <code>null</code> average.</p>
 
         <h3>Example</h3>
-        <pre>{`fetch('https://community-tierlist-api.onrender.com/average_list');`}</pre>
-        <pre>{`curl https://community-tierlist-api.onrender.com/average_list`}</pre>
+        <pre>{`fetch('https://api--community-tierlist--xgjq82288nbr.code.run/average_list');`}</pre>
+        <pre>{`curl https://api--community-tierlist--xgjq82288nbr.code.run/average_list`}</pre>
 
         <h3>Response body</h3>
         <p>Array of one entry per hero (38 total):</p>

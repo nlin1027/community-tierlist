@@ -2,7 +2,7 @@
 
 A full-stack web app for crowdsourcing community tier list rankings for Valve's *Deadlock*. Users drag-and-drop the game's 38 heroes into a tier list (D through Z) and submit it under a username; the backend aggregates every submission into a single community-average tier list anyone can view.
 
-**Live demo:** https://community-tierlist.onrender.com · **API:** https://community-tierlist-api.onrender.com
+**Live demo:** https://community-tierlist.onrender.com · **API:** https://api--community-tierlist--xgjq82288nbr.code.run
 
 ## Why I built this
 Every Deadlock YouTuber and streamer puts out their own tier list, but there was no single place to see them all together. This app gives every opinion a home: submissions are stored individually so they can eventually be browsed one at a time (e.g. "what does this YouTuber think?"), and they're also aggregated in real time into one cohesive community tier list that reflects the consensus rather than any single voice.
@@ -51,19 +51,20 @@ Builting this full-stack application taught me the nuances of joining the fronte
 - Utilize Redis caching to create a page for viewing most recent rankings and most popular/least popular rankings
 - CI/CD pipeline for ease of future implementation
 
-**Prerequisites:** Node.js, PostgreSQL, Redis
+**Prerequisites:** Node.js, a Supabase (Postgres) project, Redis
 
 ```bash
 # backend
 cd api
 npm install
-# .env needs: DATABASE_URL (or PGHOST/PGPORT/PGUSER/PGPASSWORD/PGDATABASE), REDIS_URL, PORT
+# .env needs: DATABASE_URL (Supabase session pooler), REDIS_URL, PORT (see .env.example)
+# Supabase CA cert must be at api/certs/supabase-ca.crt
 node server.js
 
 # frontend
 cd app
 npm install
-# .env needs: VITE_API_URL_LOCAL
+# .env needs: VITE_API_URL_LOCAL (dev) and VITE_API_URL_PROD (production build)
 npm run dev
 ```
 
