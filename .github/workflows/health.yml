@@ -20,7 +20,7 @@ jobs:
         run: curl --fail --silent --show-error --retry 3 --retry-delay 15 --max-time 30 "$API_URL/health"
 
       - name: API can reach Postgres and Redis
-        run: curl --fail --silent --show-error --retry 3 --retry-delay 15 --max-time 30 "$API_URL/get_character/abrams"
+        run: curl --fail --silent --show-error --retry 3 --retry-delay 15 --max-time 30 "$API_URL/get_character/Abrams"
 
       - name: Frontend is up
         run: curl --fail --silent --show-error --retry 3 --retry-delay 15 --max-time 60 "$APP_URL"
