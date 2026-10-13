@@ -1,0 +1,26 @@
+name: Health check
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  API_URL: https://api--community-tierlist--xgjq82288nbr.code.run
+  APP_URL: https://community-tierlist.onrender.com
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: API process is up
+        run: curl --fail --silent --show-error --retry 3 --retry-delay 15 --max-time 30 "$API_URL/health"
+
+      - name: API can reach Postgres and Redis
+        run: curl --fail --silent --show-error --retry 3 --retry-delay 15 --max-time 30 "$API_URL/get_character/abrams"
+
+      - name: Frontend is up
+        run: curl --fail --silent --show-error --retry 3 --retry-delay 15 --max-time 60 "$APP_URL"
