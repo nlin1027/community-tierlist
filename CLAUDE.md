@@ -14,3 +14,10 @@ Rules:
 - Never edit a migration that has already been applied; add a new one instead.
 - Keep migrations backwards-compatible with the currently deployed API (the API deploys separately from the migration): add columns first, ship code that uses them later, drop things in a later migration.
 - There is no staging database, so every applied migration hits production.
+
+## Adding an API endpoint (`api/app.js`)
+
+1. Add the route inside `createApp` with its own `createLimiter(...)`, validate input first, and use the injected `pool` (never require `db`/`redis` in `app.js`).
+2. In `api/test/app.test.js`, add a `describe('<METHOD> /<path>')` block: each validation rule -> 400 with no DB call, happy path (status, body, query params), empty/404 case if any, and DB failure -> 500.
+3. Add a row to the `endpoints` table in the `rate limiting` block so its limit returns 429.
+4. Run `npm run lint` and `npm test` from `api/` before opening the PR (CI runs both in the `api` job).
