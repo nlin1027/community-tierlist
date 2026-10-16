@@ -41,7 +41,7 @@ function createApp({ pool, redisClient }) {
   });
 
   app.post('/submit_character', submitCharacterLimiter, async (req, res) => {
-    const { user, character, tier } = req.body;
+    const { user, character, tier } = req.body ?? {};
 
     if (typeof user !== 'string' || !USERNAME_PATTERN.test(user)) {
       return res.status(400).json({ error: 'user must be 3-20 alphanumeric characters' });
@@ -67,7 +67,7 @@ function createApp({ pool, redisClient }) {
   });
 
   app.post('/submit_list', submitListLimiter, async (req, res) => {
-    const { user, rankings } = req.body;
+    const { user, rankings } = req.body ?? {};
 
     if (typeof user !== 'string' || !USERNAME_PATTERN.test(user)) {
       return res.status(400).json({ error: 'user must be 3-20 alphanumeric characters' });
@@ -76,7 +76,8 @@ function createApp({ pool, redisClient }) {
       return res.status(400).json({ error: 'rankings must be a non-empty array' });
     }
 
-    for (const { character, tier } of rankings) {
+    for (const entry of rankings) {
+      const { character, tier } = entry ?? {};
       if (!HEROES.includes(character)) {
         return res.status(400).json({ error: `invalid character: ${character}` });
       }
