@@ -42,8 +42,7 @@ jobs:
           cache: npm
           cache-dependency-path: api/package-lock.json
       - run: npm ci
-      - name: Syntax check
-        run: for f in *.js; do node --check "$f"; done
+      - run: npm run lint
 
   docker:
     runs-on: ubuntu-latest
