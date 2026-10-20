@@ -6,7 +6,7 @@ Production schema changes go through `supabase/migrations/` and are applied auto
 
 1. Branch from `main` and run from the repo root: `npx supabase migration new <short_name>`
 2. Write the SQL in the new file under `supabase/migrations/`. Use `if not exists` where possible, and `enable row level security` on every new table.
-3. Dry-run against production (changes nothing): `npx supabase db push --db-url $env:SUPABASE_DB_URL --dry-run` (session pooler URL, port 5432)
+3. Dry-run against production (changes nothing): `npx supabase db push --db-url $env:DATABASE_URL --dry-run` (session pooler URL, port 5432)
 4. Open a PR. Merging to `main` triggers the migrate workflow, which runs `supabase db push` against the production database.
 5. Verify: Actions tab -> "Migrate database" is green, and `npx supabase migration list --db-url ...` shows the same version under Local and Remote.
 
