@@ -47,7 +47,7 @@ function createApp({ pool, redisClient }) {
       return res.status(400).json({ error: 'user must be 3-20 alphanumeric characters' });
     }
     if (!HEROES.includes(character)) {
-      return res.status(400).json({ error: 'character must be one of the 38 valid Deadlock heroes' });
+      return res.status(400).json({ error: 'character must be one of the 44 valid Deadlock heroes' });
     }
     if (!VALID_TIERS.includes(tier)) {
       return res.status(400).json({ error: 'tier must be one of D, C, B, A, S, Z' });
@@ -108,7 +108,7 @@ function createApp({ pool, redisClient }) {
     const { character } = req.params;
 
     if (!HEROES.includes(character)) {
-      return res.status(400).json({ error: 'character must be one of the 38 valid Deadlock heroes' });
+      return res.status(400).json({ error: 'character must be one of the 44 valid Deadlock heroes' });
     }
 
     try {
