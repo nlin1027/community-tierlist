@@ -1,6 +1,6 @@
 # Community Tierlist
 
-A full-stack web app for crowdsourcing community tier list rankings for Valve's *Deadlock*. Users drag-and-drop the game's 38 heroes into a tier list (D through Z) and submit it under a username; the backend aggregates every submission into a single community-average tier list anyone can view.
+A full-stack web app for crowdsourcing community tier list rankings for Valve's *Deadlock*. Users drag-and-drop the game's 44 heroes into a tier list (D through Z) and submit it under a username; the backend aggregates every submission into a single community-average tier list anyone can view.
 
 **Live demo:** https://community-tierlist.onrender.com · **API:** https://api--community-tierlist--xgjq82288nbr.code.run
 
@@ -33,7 +33,7 @@ app/ (React + Vite SPA) --fetch--> api/ (Express REST API) --pg--> PostgreSQL
 | POST | `/submit_character` | Submit a single hero ranking |
 | POST | `/submit_list` | Submit a full tier list in one request |
 | GET | `/get_character/:character` | Average tier for one hero |
-| GET | `/average_list` | Average tier for all 38 heroes |
+| GET | `/average_list` | Average tier for all 44 heroes |
 | GET | `/health` | Liveness check |
 
 Full request/response schemas and examples are served at `/docs` in the app (see [`app/src/pages/Docs.jsx`](app/src/pages/Docs.jsx)).

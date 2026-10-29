@@ -32,7 +32,7 @@ function Docs() {
             <tr>
               <td>character</td>
               <td>string</td>
-              <td>One of the 38 valid Deadlock heroes</td>
+              <td>One of the 44 valid Deadlock heroes</td>
             </tr>
             <tr>
               <td>tier</td>
@@ -75,7 +75,7 @@ function Docs() {
             <tr>
               <td>character</td>
               <td>string</td>
-              <td>One of the 38 valid Deadlock heroes</td>
+              <td>One of the 44 valid Deadlock heroes</td>
             </tr>
             <tr>
               <td>tier</td>
@@ -127,7 +127,7 @@ function Docs() {
             <tr>
               <td>rankings[].character</td>
               <td>string</td>
-              <td>One of the 38 valid Deadlock heroes</td>
+              <td>One of the 44 valid Deadlock heroes</td>
             </tr>
             <tr>
               <td>rankings[].tier</td>
@@ -183,7 +183,7 @@ function Docs() {
             <tr>
               <td>character</td>
               <td>string</td>
-              <td>One of the 38 valid Deadlock heroes</td>
+              <td>One of the 44 valid Deadlock heroes</td>
             </tr>
             <tr>
               <td>tier</td>
@@ -225,7 +225,7 @@ function Docs() {
             <tr>
               <td>character</td>
               <td>string</td>
-              <td>One of the 38 valid Deadlock heroes</td>
+              <td>One of the 44 valid Deadlock heroes</td>
             </tr>
           </tbody>
         </table>
@@ -289,7 +289,7 @@ function Docs() {
         <pre>{`curl https://api--community-tierlist--xgjq82288nbr.code.run/average_list`}</pre>
 
         <h3>Response body</h3>
-        <p>Array of one entry per hero (38 total):</p>
+        <p>Array of one entry per hero (44 total):</p>
         <table>
           <thead>
             <tr>
