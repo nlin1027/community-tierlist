@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/context';
 import { apiFetch, errorMessage } from '../lib/api';
-import { HEROES, TIERS, TIER_META, emptyBoard } from '../lib/heroes';
-import { HeroCard, TierLabel } from '../components/TierList';
+import { HEROES, TIERS, emptyBoard } from '../lib/heroes';
+import { HeroIcon, TierLabel } from '../components/TierList';
 import './Deadlock.css';
 
 function removeHero(board, hero) {
@@ -131,113 +131,87 @@ function DeadlockRank() {
       setStatus({ ok: false, message: errorMessage(result) });
       return;
     }
-    setStatus({ ok: true, message: `Sealed and submitted — ${result.data.length} heroes ranked.` });
+    setStatus({ ok: true, message: `Submitted ${result.data.length} hero rankings` });
   };
 
   if (!ready) {
-    return <div className="page"><p className="muted center">Checking your session…</p></div>;
+    return <div className="deadlock-page"><p className="view-subtitle">Checking your session…</p></div>;
   }
 
   if (!user) {
     return (
-      <div className="page">
-        <section className="panel gate">
-          <p className="eyebrow">Members only</p>
-          <h1 className="page-title">Make your mark</h1>
-          <p className="lede">
-            Sign in to submit a tier list. Your rankings are saved to your name, count toward the
-            community average, and can be looked up by other players.
-          </p>
-          <Link to="/login" state={{ from: '/deadlock-rank' }} className="btn btn-brass">
-            Sign in or create an account
-          </Link>
-        </section>
+      <div className="deadlock-page">
+        <h1 className="view-title">Rank Heroes</h1>
+        <p className="view-subtitle">
+          <Link to="/login" state={{ from: '/deadlock-rank' }}>Sign in or create an account</Link> to submit a tier list.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="page">
-      <header className="page-header">
-        <p className="eyebrow">Rank the heroes</p>
-        <h1 className="page-title">Your Tier List</h1>
-        <p className="lede">
-          Drag heroes onto a tier, or tap a hero and then a tier. Submitting again replaces your
-          earlier ranking for each hero you place.
-        </p>
-      </header>
-
-      <div className="toolbar panel">
-        <span className="toolbar-meta">
+    <div className="deadlock-page">
+      <div className="rank-form">
+        <p className="rank-meta">
           Signed in as <strong>{user.username}</strong> · {placedCount} / {HEROES.length} placed
-        </span>
-        <div className="toolbar-actions">
-          <button type="button" className="btn btn-ghost" onClick={clearBoard} disabled={placedCount === 0}>
-            Clear board
-          </button>
-          <button type="button" className="btn btn-brass" onClick={handleSubmit} disabled={submitting}>
-            {submitting ? 'Submitting…' : 'Submit rankings'}
-          </button>
-        </div>
-      </div>
-
-      {status && (
-        <p className={`notice ${status.ok ? 'notice-ok' : 'notice-error'}`} role="status">{status.message}</p>
-      )}
-      {selected && (
-        <p className="notice notice-info" role="status">
-          <strong>{selected}</strong> selected — tap a tier to place, or the roster to remove.
         </p>
-      )}
 
-      <div className="tierlist">
-        {TIERS.map((tier) => (
-          <div
-            className={`tier-row${selected ? ' is-target' : ''}`}
-            key={tier}
-            style={{ '--tier-color': TIER_META[tier].color }}
-          >
-            <TierLabel tier={tier} />
-            <div
-              className="tier-zone droppable"
-              onDragOver={(e) => e.preventDefault()}
-              onDragEnter={() => handleDragEnterZone(tier)}
-              onDrop={(e) => handleDropOnTier(e, tier)}
-              onClick={() => selected && placeHero(selected, tier)}
-            >
-              {board[tier].length === 0 && <span className="tier-empty">Drop heroes here</span>}
-              {board[tier].map((hero, i) => (
-                <HeroCard
-                  key={hero}
-                  hero={hero}
-                  draggable
-                  selected={selected === hero}
-                  onDragStart={startDrag(hero)}
-                  onDragEnter={() => handleDragEnterIcon(tier, i)}
-                  insertBefore={insertInfo?.tier === tier && insertInfo?.index === i}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (selected && selected !== hero) placeHero(selected, tier, i);
-                    else toggleSelect(hero);
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
+        <button type="button" onClick={handleSubmit} disabled={submitting}>
+          {submitting ? 'Submitting…' : 'Submit'}
+        </button>
+        <button type="button" className="secondary" onClick={clearBoard} disabled={placedCount === 0}>
+          Clear
+        </button>
+
+        {status && !selected && (
+          <p className={`status ${status.ok ? 'ok' : 'error'}`} role="status">{status.message}</p>
+        )}
+        {selected && (
+          <p className="status" role="status">{selected} selected: click a tier to place it, or the bank to remove it.</p>
+        )}
       </div>
 
-      <section className="hero-bank-wrap">
-        <h3 className="bank-title">The Roster <span className="muted">({bank.length} unplaced)</span></h3>
+      <div className="tierlist-section">
+        <div className="tierlist">
+          {TIERS.map((tier) => (
+            <div className="tier-row" key={tier}>
+              <TierLabel tier={tier} />
+              <div
+                className="tier-drop-zone"
+                onDragOver={(e) => e.preventDefault()}
+                onDragEnter={() => handleDragEnterZone(tier)}
+                onDrop={(e) => handleDropOnTier(e, tier)}
+                onClick={() => selected && placeHero(selected, tier)}
+              >
+                {board[tier].map((hero, i) => (
+                  <HeroIcon
+                    key={hero}
+                    hero={hero}
+                    draggable
+                    selected={selected === hero}
+                    onDragStart={startDrag(hero)}
+                    onDragEnter={() => handleDragEnterIcon(tier, i)}
+                    insertBefore={insertInfo?.tier === tier && insertInfo?.index === i}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (selected && selected !== hero) placeHero(selected, tier, i);
+                      else toggleSelect(hero);
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
         <div
-          className="hero-bank droppable"
+          className="hero-bank"
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDropOnBank}
           onClick={() => selected && returnToBank(selected)}
         >
-          {bank.length === 0 && <span className="tier-empty">Every hero has been placed.</span>}
           {bank.map((hero) => (
-            <HeroCard
+            <HeroIcon
               key={hero}
               hero={hero}
               draggable
@@ -250,7 +224,7 @@ function DeadlockRank() {
             />
           ))}
         </div>
-      </section>
+      </div>
     </div>
   );
 }

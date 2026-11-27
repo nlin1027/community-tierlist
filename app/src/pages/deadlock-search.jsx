@@ -31,34 +31,31 @@ function SearchResults({ q }) {
   }, [q, valid]);
 
   if (!q) {
-    return <p className="muted center">Type a username to find another player's tier list.</p>;
+    return <p className="view-subtitle">Type a username to find another player's tier list.</p>;
   }
   if (!valid) {
-    return <p className="notice notice-error">Usernames contain only letters and numbers.</p>;
+    return <p className="status error">Usernames contain only letters and numbers.</p>;
   }
   if (result.q !== q) {
-    return <p className="muted center">Searching the registry…</p>;
+    return <p className="view-subtitle">Searching…</p>;
   }
   if (!result.ok) {
-    return <p className="notice notice-error">{result.error}</p>;
+    return <p className="status error">{result.error}</p>;
   }
   if (result.rows.length === 0) {
-    return <p className="muted center">No players match “{q}”.</p>;
+    return <p className="view-subtitle">No players match “{q}”.</p>;
   }
 
   return (
     <ul className="result-list">
       {result.rows.map((row) => (
         <li key={row.username}>
-          <Link to={`/deadlock-search/${row.username}`} className="result-card panel">
-            <span className="result-name">{row.username}</span>
-            <span className="result-meta">
-              {Number(row.heroes_ranked) > 0
-                ? `${row.heroes_ranked} heroes ranked · updated ${formatDate(row.last_submitted)}`
-                : 'No rankings yet'}
-            </span>
-            <span className="result-arrow" aria-hidden="true">→</span>
-          </Link>
+          <Link to={`/deadlock-search/${row.username}`} className="result-name">{row.username}</Link>
+          <span className="result-meta">
+            {Number(row.heroes_ranked) > 0
+              ? `${row.heroes_ranked} heroes ranked · updated ${formatDate(row.last_submitted)}`
+              : 'No rankings yet'}
+          </span>
         </li>
       ))}
     </ul>
@@ -80,18 +77,15 @@ function UserRankings({ username }) {
   }, [username]);
 
   if (result.username !== username) {
-    return <p className="muted center">Retrieving the dossier…</p>;
+    return <p className="view-subtitle">Loading…</p>;
   }
   if (result.status === 404) {
     return (
-      <section className="panel empty-state">
-        <h2>No such player</h2>
-        <p className="muted">There is no account named “{username}”.</p>
-      </section>
+      <p className="status error">There is no account named “{username}”.</p>
     );
   }
   if (result.status !== 200) {
-    return <p className="notice notice-error">{result.error}</p>;
+    return <p className="status error">{result.error}</p>;
   }
 
   const { rankings, last_updated: lastUpdated } = result.data;
@@ -104,22 +98,17 @@ function UserRankings({ username }) {
 
   return (
     <>
-      <header className="dossier panel">
-        <div>
-          <p className="eyebrow">Player dossier</p>
-          <h2 className="dossier-name">{result.data.username}</h2>
-        </div>
-        <p className="dossier-meta">
-          {rankings.length > 0
-            ? <>{rankings.length} of {HEROES.length} heroes ranked<br />Last updated {formatDate(lastUpdated)}</>
-            : 'This player has not ranked any heroes yet.'}
-        </p>
-      </header>
+      <h2 className="view-title">{result.data.username}</h2>
+      <p className="view-subtitle">
+        {rankings.length > 0
+          ? `${rankings.length} of ${HEROES.length} heroes ranked · last updated ${formatDate(lastUpdated)}`
+          : 'This player has not ranked any heroes yet.'}
+      </p>
       {rankings.length > 0 && (
-        <>
+        <div className="tierlist-section">
           <TierBoard board={board} />
           {unranked.length > 0 && <HeroBank heroes={unranked} title={`Not ranked by ${result.data.username}`} />}
-        </>
+        </div>
       )}
     </>
   );
@@ -132,15 +121,12 @@ function DeadlockSearch() {
   const q = (params.get('q') ?? '').trim();
 
   return (
-    <div className="page">
-      <header className="page-header">
-        <p className="eyebrow">The registry</p>
-        <h1 className="page-title">Search Players</h1>
-        <p className="lede">Look up any registered player and see their latest tier list.</p>
-      </header>
+    <div className="deadlock-page">
+      <h1 className="view-title">Search Players</h1>
+      <p className="view-subtitle">Look up any registered player and see their latest tier list.</p>
 
       <form
-        className="search-bar panel"
+        className="rank-form"
         role="search"
         onSubmit={(e) => {
           // Results update as you type; Enter jumps straight to an exact match.
@@ -148,7 +134,6 @@ function DeadlockSearch() {
           if (QUERY_PATTERN.test(q) && q.length >= 3) navigate(`/deadlock-search/${q}`);
         }}
       >
-        <span className="search-icon" aria-hidden="true">⌕</span>
         <input
           type="search"
           placeholder="Search by username"

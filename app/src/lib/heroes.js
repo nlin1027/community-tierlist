@@ -11,13 +11,13 @@ export const HEROES = [
 // Highest first, as displayed.
 export const TIERS = ['Z', 'S', 'A', 'B', 'C', 'D'];
 
-export const TIER_META = {
-  Z: { color: '#b8372f', title: 'Godlike' },
-  S: { color: '#df922b', title: 'Formidable' },
-  A: { color: '#cdb25c', title: 'Strong' },
-  B: { color: '#5b9a7f', title: 'Serviceable' },
-  C: { color: '#4a7bc8', title: 'Struggling' },
-  D: { color: '#7a5ea3', title: 'Cursed' },
+export const TIER_COLORS = {
+  Z: '#ff6b6b',
+  S: '#ff9f43',
+  A: '#ffd32a',
+  B: '#0be881',
+  C: '#48dbfb',
+  D: '#a29bfe',
 };
 
 // API averages use D=1 ... Z=6.

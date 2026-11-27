@@ -25,7 +25,6 @@ const ROW_FIELDS = [
 const GROUPS = [
   {
     title: 'Accounts',
-    intro: 'Create an account or sign in to receive a session token. Tokens last one week; sign in again afterwards.',
     endpoints: [
       {
         method: 'POST',
@@ -107,7 +106,6 @@ const GROUPS = [
   },
   {
     title: 'Submitting rankings',
-    intro: 'Submissions are recorded under the signed-in account. Submitting again adds a newer ranking; a player’s latest ranking for each hero is what others see.',
     endpoints: [
       {
         method: 'POST',
@@ -173,7 +171,6 @@ const GROUPS = [
   },
   {
     title: 'Community averages',
-    intro: 'Tier values are averaged on a 1-6 scale: D=1, C=2, B=3, A=4, S=5, Z=6.',
     endpoints: [
       {
         method: 'GET',
@@ -283,48 +280,56 @@ const GROUPS = [
   },
 ];
 
-const slug = (method, path) => `${method}-${path}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
 function Endpoint({ method, path, auth, description, tables = [], examples = [], response, responses }) {
   return (
-    <section className="endpoint panel" id={slug(method, path)}>
-      <h3 className="endpoint-title">
-        <span className={`method ${method.toLowerCase()}`}>{method}</span>
-        <code>{path}</code>
-        {auth && <span className="auth-badge" title="Requires a session token">Signed in</span>}
-      </h3>
-      <p>{description}</p>
+    <section>
+      <h2>
+        <span className={`method ${method.toLowerCase()}`}>{method}</span> {path}
+      </h2>
+      <p>
+        {description}
+        {auth && <> Requires sign-in: send <code>{AUTH_HEADER}</code>.</>}
+      </p>
 
       {tables.map(({ title, rows }) => (
         <div key={title}>
-          <h4>{title}</h4>
+          <h3>{title}</h3>
           <table>
             <thead>
-              <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+              </tr>
             </thead>
             <tbody>
               {rows.map(([field, type, desc]) => (
-                <tr key={field}><td><code>{field}</code></td><td>{type}</td><td>{desc}</td></tr>
+                <tr key={field}>
+                  <td>{field}</td>
+                  <td>{type}</td>
+                  <td>{desc}</td>
+                </tr>
               ))}
             </tbody>
           </table>
         </div>
       ))}
 
-      {examples.length > 0 && <h4>Example</h4>}
+      {examples.length > 0 && <h3>Example</h3>}
       {examples.map((code) => <pre key={code}>{code}</pre>)}
 
       {response && (
         <>
-          <h4>Example response</h4>
+          <h3>Example response</h3>
           <pre>{response}</pre>
         </>
       )}
 
-      <h4>Status codes</h4>
-      <ul className="status-list">
+      <h3>Responses</h3>
+      <ul>
         {responses.map(([code, desc]) => (
-          <li key={code}><code className={`code-${code[0]}`}>{code}</code> {desc}</li>
+          <li key={code}><code>{code}</code> — {desc}</li>
         ))}
       </ul>
     </section>
@@ -333,41 +338,17 @@ function Endpoint({ method, path, auth, description, tables = [], examples = [],
 
 function Docs() {
   return (
-    <div className="page docs">
-      <header className="page-header">
-        <p className="eyebrow">For developers</p>
-        <h1 className="page-title">API Documentation</h1>
-        <p className="lede">
-          Base URL: <code>{BASE}</code>. All bodies are JSON. Signed-in endpoints need an{' '}
-          <code>Authorization: Bearer &lt;token&gt;</code> header from <code>/auth/login</code> or{' '}
-          <code>/auth/register</code>.
-        </p>
-      </header>
+    <div className="docs">
+      <h1>API Documentation</h1>
+      <p>
+        Base URL: <code>{BASE}</code>
+      </p>
+      <p>
+        Endpoints marked as requiring sign-in need an <code>{AUTH_HEADER}</code> header, using the
+        token returned by <code>/auth/login</code> or <code>/auth/register</code>.
+      </p>
 
-      <div className="docs-layout">
-        <nav className="docs-toc panel" aria-label="Endpoints">
-          {GROUPS.map((group) => (
-            <div key={group.title}>
-              <p className="toc-group">{group.title}</p>
-              {group.endpoints.map(({ method, path }) => (
-                <a key={path} href={`#${slug(method, path)}`}>
-                  <span className={`method mini ${method.toLowerCase()}`}>{method}</span> {path}
-                </a>
-              ))}
-            </div>
-          ))}
-        </nav>
-
-        <div className="docs-body">
-          {GROUPS.map((group) => (
-            <section key={group.title} className="docs-group">
-              <h2 className="section-heading">{group.title}</h2>
-              {group.intro && <p className="muted">{group.intro}</p>}
-              {group.endpoints.map((ep) => <Endpoint key={ep.path} {...ep} />)}
-            </section>
-          ))}
-        </div>
-      </div>
+      {GROUPS.flatMap((group) => group.endpoints).map((ep) => <Endpoint key={ep.path} {...ep} />)}
     </div>
   );
 }

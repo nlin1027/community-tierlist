@@ -1,10 +1,9 @@
-import { TIERS, TIER_META, heroIcon } from '../lib/heroes';
+import { TIERS, TIER_COLORS, heroIcon } from '../lib/heroes';
 
-export function HeroCard({ hero, detail, draggable, onDragStart, onDragEnter, insertBefore, onClick, selected }) {
-  const classes = ['hero-card'];
+export function HeroIcon({ hero, detail, draggable, onDragStart, onDragEnter, insertBefore, onClick, selected }) {
+  const classes = ['hero-icon'];
   if (insertBefore) classes.push('insert-before');
-  if (draggable) classes.push('is-draggable');
-  if (selected) classes.push('is-selected');
+  if (selected) classes.push('selected');
   return (
     <div
       className={classes.join(' ')}
@@ -12,42 +11,37 @@ export function HeroCard({ hero, detail, draggable, onDragStart, onDragEnter, in
       onDragStart={onDragStart}
       onDragEnter={onDragEnter}
       onClick={onClick}
-      title={detail ? `${hero} — ${detail}` : hero}
+      title={detail ? `${hero} (${detail})` : hero}
     >
-      <div className="hero-portrait">
-        <img
-          src={heroIcon(hero)}
-          alt={hero}
-          draggable={false}
-          onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-        />
-      </div>
+      <img
+        src={heroIcon(hero)}
+        alt={hero}
+        draggable={false}
+        onError={(e) => { e.target.style.display = 'none'; }}
+      />
       <span className="hero-name">{hero}</span>
     </div>
   );
 }
 
 export function TierLabel({ tier }) {
-  const { color, title } = TIER_META[tier];
   return (
-    <div className="tier-label" style={{ '--tier-color': color }}>
-      <span className="tier-letter">{tier}</span>
-      <span className="tier-title">{title}</span>
+    <div className="tier-label" style={{ background: TIER_COLORS[tier] }}>
+      {tier}
     </div>
   );
 }
 
 // Read-only board. `board` maps tier -> [{ hero, detail? }].
-export function TierBoard({ board, emptyText = '—' }) {
+export function TierBoard({ board }) {
   return (
     <div className="tierlist">
       {TIERS.map((tier) => (
-        <div className="tier-row" key={tier} style={{ '--tier-color': TIER_META[tier].color }}>
+        <div className="tier-row" key={tier}>
           <TierLabel tier={tier} />
-          <div className="tier-zone">
-            {board[tier].length === 0 && <span className="tier-empty">{emptyText}</span>}
+          <div className="tier-drop-zone">
             {board[tier].map(({ hero, detail }) => (
-              <HeroCard key={hero} hero={hero} detail={detail} />
+              <HeroIcon key={hero} hero={hero} detail={detail} />
             ))}
           </div>
         </div>
@@ -56,13 +50,13 @@ export function TierBoard({ board, emptyText = '—' }) {
   );
 }
 
-export function HeroBank({ heroes, title, children, ...zoneProps }) {
+export function HeroBank({ heroes, title }) {
   return (
-    <section className="hero-bank-wrap">
+    <div>
       {title && <h3 className="bank-title">{title}</h3>}
-      <div className="hero-bank" {...zoneProps}>
-        {children ?? heroes.map((hero) => <HeroCard key={hero} hero={hero} />)}
+      <div className="hero-bank">
+        {heroes.map((hero) => <HeroIcon key={hero} hero={hero} />)}
       </div>
-    </section>
+    </div>
   );
 }

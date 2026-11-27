@@ -8,25 +8,18 @@ import Docs from './pages/Docs';
 
 function App() {
   return (
-    <div className="app-shell">
+    <>
       <NavBar />
-      <main className="app-main">
-        <Routes>
-          <Route path="/" element={<DeadlockView />} />
-          <Route path="/deadlock-rank" element={<DeadlockRank />} />
-          <Route path="/deadlock-view" element={<DeadlockView />} />
-          <Route path="/deadlock-search" element={<DeadlockSearch />} />
-          <Route path="/deadlock-search/:username" element={<DeadlockSearch />} />
-          <Route path="/login" element={<Auth />} />
-          <Route path="/docs" element={<Docs />} />
-        </Routes>
-      </main>
-      <footer className="app-footer">
-        <span className="ornament" aria-hidden="true">◆</span>
-        A fan-made community project. Not affiliated with Valve Corporation.
-        <span className="ornament" aria-hidden="true">◆</span>
-      </footer>
-    </div>
+      <Routes>
+        <Route path="/" element={<DeadlockView />} />
+        <Route path="/deadlock-rank" element={<DeadlockRank />} />
+        <Route path="/deadlock-view" element={<DeadlockView />} />
+        <Route path="/deadlock-search" element={<DeadlockSearch />} />
+        <Route path="/deadlock-search/:username" element={<DeadlockSearch />} />
+        <Route path="/login" element={<Auth />} />
+        <Route path="/docs" element={<Docs />} />
+      </Routes>
+    </>
   );
 }
 

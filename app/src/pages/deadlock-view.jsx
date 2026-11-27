@@ -34,8 +34,8 @@ function formatDay(day) {
 }
 
 function describeRange(from, to) {
-  if (!from && !to) return 'From the very first submission to today';
-  if (from && to) return from === to ? `On ${formatDay(from)}` : `${formatDay(from)} — ${formatDay(to)}`;
+  if (!from && !to) return 'All time';
+  if (from && to) return from === to ? `On ${formatDay(from)}` : `${formatDay(from)} to ${formatDay(to)}`;
   if (from) return `Since ${formatDay(from)}`;
   return `Up to ${formatDay(to)}`;
 }
@@ -111,81 +111,71 @@ function DeadlockView() {
   const loading = result.key !== key;
 
   return (
-    <div className="page">
-      <header className="page-header">
-        <p className="eyebrow">The community ledger</p>
-        <h1 className="page-title">Community Tierlist</h1>
-        <p className="lede">The average of every player's rankings, recalculated for whatever period you choose.</p>
-      </header>
+    <div className="deadlock-page">
+      <h1 className="view-title">Community Tierlist</h1>
+      <p className="view-subtitle">Average hero rankings based on user submissions</p>
 
-      <section className="panel range-panel" aria-label="Time period">
-        <div className="preset-row" role="group" aria-label="Preset periods">
-          {PRESETS.map((p) => (
-            <button
-              key={p.key}
-              type="button"
-              className={`chip${activePreset === p.key ? ' active' : ''}`}
-              onClick={() => applyRange(p.range())}
-            >
-              {p.label}
-            </button>
-          ))}
-          <span className={`chip chip-static${activePreset === 'custom' ? ' active' : ''}`}>Custom</span>
-        </div>
-
-        <form
-          className="range-form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            applyRange(draft);
-          }}
-        >
-          <label className="field">
-            <span>From</span>
-            <input
-              type="date"
-              value={draft.from}
-              max={draft.to || undefined}
-              onChange={(e) => setDraft((d) => ({ ...d, from: e.target.value }))}
-            />
-          </label>
-          <span className="range-sep" aria-hidden="true">→</span>
-          <label className="field">
-            <span>To</span>
-            <input
-              type="date"
-              value={draft.to}
-              min={draft.from || undefined}
-              onChange={(e) => setDraft((d) => ({ ...d, to: e.target.value }))}
-            />
-          </label>
-          <button type="submit" className="btn btn-brass">Apply</button>
-        </form>
-        {formError && <p className="notice notice-error">{formError}</p>}
-      </section>
-
-      <div className="range-summary">
-        <span className="range-label">{describeRange(from, to)}</span>
-        {!loading && result.total !== undefined && (
-          <span className="muted">{result.total.toLocaleString()} hero rankings counted</span>
-        )}
+      <div className="preset-row" role="group" aria-label="Time period">
+        {PRESETS.map((p) => (
+          <button
+            key={p.key}
+            type="button"
+            className={`preset${activePreset === p.key ? ' active' : ''}`}
+            onClick={() => applyRange(p.range())}
+          >
+            {p.label}
+          </button>
+        ))}
       </div>
 
-      {loading && <p className="muted center">Consulting the ledger…</p>}
-      {!loading && result.error && <p className="notice notice-error">{result.error}</p>}
+      <form
+        className="rank-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          applyRange(draft);
+        }}
+      >
+        <div className="field">
+          <label htmlFor="range-from">From</label>
+          <input
+            id="range-from"
+            type="date"
+            value={draft.from}
+            max={draft.to || undefined}
+            onChange={(e) => setDraft((d) => ({ ...d, from: e.target.value }))}
+          />
+        </div>
+        <div className="field">
+          <label htmlFor="range-to">To</label>
+          <input
+            id="range-to"
+            type="date"
+            value={draft.to}
+            min={draft.from || undefined}
+            onChange={(e) => setDraft((d) => ({ ...d, to: e.target.value }))}
+          />
+        </div>
+        <button type="submit">Apply</button>
+        {formError && <p className="status error">{formError}</p>}
+      </form>
+
+      <p className="view-subtitle">
+        {describeRange(from, to)}
+        {!loading && result.total !== undefined && ` · ${result.total.toLocaleString()} hero rankings counted`}
+      </p>
+
+      {loading && <p className="view-subtitle">Loading…</p>}
+      {!loading && result.error && <p className="status error">{result.error}</p>}
       {!loading && result.empty && (
-        <section className="panel empty-state">
-          <h2>No rankings in this period</h2>
-          <p className="muted">Nobody submitted a tier list during these dates. Try a wider range.</p>
-        </section>
+        <p className="view-subtitle">No rankings were submitted in this period. Try a wider range.</p>
       )}
       {!loading && result.board && (
-        <>
+        <div className="tierlist-section">
           <TierBoard board={result.board} />
           {result.unranked.length > 0 && (
             <HeroBank heroes={result.unranked} title={`Unranked in this period (${result.unranked.length})`} />
           )}
-        </>
+        </div>
       )}
     </div>
   );

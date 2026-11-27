@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/context';
-import Sigil from '../components/Sigil';
-import './Auth.css';
+import './Deadlock.css';
 
 const USERNAME_PATTERN = /^[a-zA-Z0-9]{3,20}$/;
 
@@ -57,86 +56,71 @@ function Auth() {
   };
 
   return (
-    <div className="page auth-page">
-      <section className="panel auth-card">
-        <Sigil className="auth-sigil" />
-        <p className="eyebrow">{isRegister ? 'Join the ledger' : 'Welcome back'}</p>
-        <h1 className="page-title">{isRegister ? 'Create an account' : 'Sign in'}</h1>
+    <div className="deadlock-page">
+      <h1 className="view-title">{isRegister ? 'Create an account' : 'Sign in'}</h1>
+      <p className="view-subtitle">
+        {isRegister ? 'Already have an account? ' : 'New here? '}
+        <button type="button" className="link-button" onClick={() => switchMode(isRegister ? 'login' : 'register')}>
+          {isRegister ? 'Sign in' : 'Create an account'}
+        </button>
+      </p>
 
-        <div className="auth-tabs" role="tablist">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={!isRegister}
-            className={!isRegister ? 'active' : ''}
-            onClick={() => switchMode('login')}
-          >
-            Sign in
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={isRegister}
-            className={isRegister ? 'active' : ''}
-            onClick={() => switchMode('register')}
-          >
-            Register
-          </button>
+      <form className="rank-form auth-form" onSubmit={handleSubmit}>
+        <div className="field">
+          <label htmlFor="auth-username">Username</label>
+          <input
+            id="auth-username"
+            type="text"
+            autoComplete="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            minLength={3}
+            maxLength={20}
+            pattern="[a-zA-Z0-9]+"
+            title="3-20 characters: letters and numbers only"
+            required
+          />
         </div>
-
-        <form className="auth-form" onSubmit={handleSubmit}>
-          <label className="field">
-            <span>Username</span>
+        <div className="field">
+          <label htmlFor="auth-password">Password</label>
+          <input
+            id="auth-password"
+            type="password"
+            autoComplete={isRegister ? 'new-password' : 'current-password'}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            minLength={isRegister ? 8 : 1}
+            maxLength={128}
+            required
+          />
+        </div>
+        {isRegister && (
+          <div className="field">
+            <label htmlFor="auth-confirm">Confirm password</label>
             <input
-              type="text"
-              autoComplete="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              minLength={3}
-              maxLength={20}
-              pattern="[a-zA-Z0-9]+"
-              title="3-20 characters: letters and numbers only"
-              required
-            />
-          </label>
-          <label className="field">
-            <span>Password</span>
-            <input
+              id="auth-confirm"
               type="password"
-              autoComplete={isRegister ? 'new-password' : 'current-password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              minLength={isRegister ? 8 : 1}
+              autoComplete="new-password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
               maxLength={128}
               required
             />
-          </label>
-          {isRegister && (
-            <label className="field">
-              <span>Confirm password</span>
-              <input
-                type="password"
-                autoComplete="new-password"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                maxLength={128}
-                required
-              />
-            </label>
-          )}
+          </div>
+        )}
 
-          {error && <p className="notice notice-error" role="alert">{error}</p>}
+        <button type="submit" disabled={busy}>
+          {busy ? 'One moment…' : isRegister ? 'Create account' : 'Sign in'}
+        </button>
 
-          <button type="submit" className="btn btn-brass btn-block" disabled={busy}>
-            {busy ? 'One moment…' : isRegister ? 'Create account' : 'Sign in'}
-          </button>
-          <p className="auth-fine">
-            {isRegister
-              ? 'Your username is public: other players can search for it and see your rankings.'
-              : 'Sessions last one week on this device.'}
-          </p>
-        </form>
-      </section>
+        {error && <p className="status error" role="alert">{error}</p>}
+      </form>
+
+      <p className="view-subtitle">
+        {isRegister
+          ? 'Your username is public: other players can search for it and see your rankings.'
+          : 'Sessions last one week on this device.'}
+      </p>
     </div>
   );
 }
