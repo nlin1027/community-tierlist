@@ -1,336 +1,373 @@
 import './Docs.css';
 
-function Docs() {
-  return (
-    <div className="docs">
-      <h1>API Documentation</h1>
-      <p>
-        Base URL: <code>https://api--community-tierlist--xgjq82288nbr.code.run</code>
-      </p>
+const BASE = 'https://api--community-tierlist--xgjq82288nbr.code.run';
 
-      <section>
-        <h2>
-          <span className="method post">POST</span> /submit_character
-        </h2>
-        <p>Inserts a hero ranking submitted by a user.</p>
+const TIER_DESC = 'One of: Z, S, A, B, C, D';
+const HERO_DESC = 'One of the 44 valid Deadlock heroes';
+const AUTH_HEADER = 'Authorization: Bearer <token>';
 
-        <h3>Request body</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Field</th>
-              <th>Type</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>user</td>
-              <td>string</td>
-              <td>Name of the user submitting the ranking</td>
-            </tr>
-            <tr>
-              <td>character</td>
-              <td>string</td>
-              <td>One of the 44 valid Deadlock heroes</td>
-            </tr>
-            <tr>
-              <td>tier</td>
-              <td>string</td>
-              <td>One of: Z, S, A, B, C, D</td>
-            </tr>
-          </tbody>
-        </table>
+const SESSION_FIELDS = [
+  ['token', 'string', 'Session token. Send it as a Bearer token on signed-in endpoints.'],
+  ['expires_at', 'string', 'When the token stops working (one week after it was issued)'],
+  ['user.id', 'string', 'Account ID (UUID)'],
+  ['user.username', 'string', 'Account username'],
+];
 
-        <h3>Example</h3>
-        <pre>{`fetch('https://api--community-tierlist--xgjq82288nbr.code.run/submit_character', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ user: 'nathan', character: 'Seven', tier: 'Z' }),
-});`}</pre>
-        <pre>{`curl -X POST https://api--community-tierlist--xgjq82288nbr.code.run/submit_character \\
+const ROW_FIELDS = [
+  ['id', 'integer', 'Auto-generated row ID'],
+  ['user', 'string', 'Username of the account that submitted the ranking'],
+  ['user_id', 'string', 'Account ID (UUID) that submitted the ranking'],
+  ['character', 'string', HERO_DESC],
+  ['tier', 'string', TIER_DESC],
+  ['date', 'string', 'Timestamp the row was inserted'],
+];
+
+const GROUPS = [
+  {
+    title: 'Accounts',
+    intro: 'Create an account or sign in to receive a session token. Tokens last one week; sign in again afterwards.',
+    endpoints: [
+      {
+        method: 'POST',
+        path: '/auth/register',
+        description: 'Creates an account and signs it in.',
+        tables: [{
+          title: 'Request body',
+          rows: [
+            ['username', 'string', '3-20 letters and numbers. Unique, ignoring case.'],
+            ['password', 'string', '8-128 characters'],
+          ],
+        }, { title: 'Response body', rows: SESSION_FIELDS }],
+        examples: [`curl -X POST ${BASE}/auth/register \\
   -H "Content-Type: application/json" \\
-  -d '{"user": "nathan", "character": "Seven", "tier": "Z"}'`}</pre>
-
-        <h3>Response body</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Field</th>
-              <th>Type</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>id</td>
-              <td>integer</td>
-              <td>Auto-generated row ID</td>
-            </tr>
-            <tr>
-              <td>user</td>
-              <td>string</td>
-              <td>Name of the user who submitted the ranking</td>
-            </tr>
-            <tr>
-              <td>character</td>
-              <td>string</td>
-              <td>One of the 44 valid Deadlock heroes</td>
-            </tr>
-            <tr>
-              <td>tier</td>
-              <td>string</td>
-              <td>One of: Z, S, A, B, C, D</td>
-            </tr>
-            <tr>
-              <td>date</td>
-              <td>string</td>
-              <td>Timestamp the row was inserted</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <h3>Responses</h3>
-        <ul>
-          <li><code>201</code> — returns the inserted row</li>
-          <li><code>400</code> — invalid user, character, or tier</li>
-          <li><code>500</code> — query failed</li>
-        </ul>
-      </section>
-
-      <section>
-        <h2>
-          <span className="method post">POST</span> /submit_list
-        </h2>
-        <p>Inserts a full tier list of hero rankings submitted by a user in a single request.</p>
-
-        <h3>Request body</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Field</th>
-              <th>Type</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>user</td>
-              <td>string</td>
-              <td>Name of the user submitting the rankings</td>
-            </tr>
-            <tr>
-              <td>rankings</td>
-              <td>array</td>
-              <td>Non-empty array of ranking objects</td>
-            </tr>
-            <tr>
-              <td>rankings[].character</td>
-              <td>string</td>
-              <td>One of the 44 valid Deadlock heroes</td>
-            </tr>
-            <tr>
-              <td>rankings[].tier</td>
-              <td>string</td>
-              <td>One of: Z, S, A, B, C, D</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <h3>Example</h3>
-        <pre>{`fetch('https://api--community-tierlist--xgjq82288nbr.code.run/submit_list', {
+  -d '{"username": "nathan", "password": "correct horse"}'`],
+        responses: [
+          ['201', 'account created; returns a session'],
+          ['400', 'invalid username or password'],
+          ['409', 'username is already taken'],
+          ['429', 'more than 5 registrations per hour'],
+          ['500', 'query failed'],
+        ],
+      },
+      {
+        method: 'POST',
+        path: '/auth/login',
+        description: 'Signs in to an existing account and issues a new one-week token.',
+        tables: [{
+          title: 'Request body',
+          rows: [
+            ['username', 'string', 'Account username (case-insensitive)'],
+            ['password', 'string', 'Account password'],
+          ],
+        }, { title: 'Response body', rows: SESSION_FIELDS }],
+        examples: [`curl -X POST ${BASE}/auth/login \\
+  -H "Content-Type: application/json" \\
+  -d '{"username": "nathan", "password": "correct horse"}'`],
+        response: `{
+  "token": "q8Z0b2...",
+  "expires_at": "2026-12-04T16:00:00.000Z",
+  "user": { "id": "8f1c...", "username": "nathan" }
+}`,
+        responses: [
+          ['200', 'signed in; returns a session'],
+          ['400', 'missing or malformed username/password'],
+          ['401', 'invalid username or password'],
+          ['429', 'more than 10 attempts per 15 minutes'],
+          ['500', 'query failed'],
+        ],
+      },
+      {
+        method: 'GET',
+        path: '/auth/me',
+        auth: true,
+        description: 'Returns the account behind a token. Useful for checking a stored token is still valid.',
+        examples: [`curl ${BASE}/auth/me -H "${AUTH_HEADER}"`],
+        response: `{
+  "user": { "id": "8f1c...", "username": "nathan" },
+  "expires_at": "2026-12-04T16:00:00.000Z"
+}`,
+        responses: [
+          ['200', 'the signed-in account'],
+          ['401', 'missing, expired or revoked token'],
+        ],
+      },
+      {
+        method: 'POST',
+        path: '/auth/logout',
+        auth: true,
+        description: 'Revokes the token used to make the request.',
+        examples: [`curl -X POST ${BASE}/auth/logout -H "${AUTH_HEADER}"`],
+        responses: [
+          ['204', 'token revoked'],
+          ['401', 'missing, expired or revoked token'],
+          ['500', 'query failed'],
+        ],
+      },
+    ],
+  },
+  {
+    title: 'Submitting rankings',
+    intro: 'Submissions are recorded under the signed-in account. Submitting again adds a newer ranking; a player’s latest ranking for each hero is what others see.',
+    endpoints: [
+      {
+        method: 'POST',
+        path: '/submit_list',
+        auth: true,
+        description: 'Submits a full tier list in a single request.',
+        tables: [{
+          title: 'Request body',
+          rows: [
+            ['rankings', 'array', 'Non-empty array, at most one entry per hero'],
+            ['rankings[].character', 'string', HERO_DESC],
+            ['rankings[].tier', 'string', TIER_DESC],
+          ],
+        }, { title: 'Response body (array of rows)', rows: ROW_FIELDS }],
+        examples: [
+          `fetch('${BASE}/submit_list', {
   method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: \`Bearer \${token}\`,
+  },
   body: JSON.stringify({
-    user: 'nathan',
     rankings: [
       { character: 'Seven', tier: 'Z' },
       { character: 'Haze', tier: 'S' },
     ],
   }),
-});`}</pre>
-        <pre>{`curl -X POST https://api--community-tierlist--xgjq82288nbr.code.run/submit_list \\
+});`,
+        ],
+        responses: [
+          ['201', 'returns every inserted row'],
+          ['400', 'invalid, duplicate or too many entries'],
+          ['401', 'missing, expired or revoked token'],
+          ['429', 'more than 3 lists per minute'],
+          ['500', 'query failed'],
+        ],
+      },
+      {
+        method: 'POST',
+        path: '/submit_character',
+        auth: true,
+        description: 'Submits a ranking for a single hero.',
+        tables: [{
+          title: 'Request body',
+          rows: [
+            ['character', 'string', HERO_DESC],
+            ['tier', 'string', TIER_DESC],
+          ],
+        }, { title: 'Response body', rows: ROW_FIELDS }],
+        examples: [`curl -X POST ${BASE}/submit_character \\
   -H "Content-Type: application/json" \\
-  -d '{
-    "user": "nathan",
-    "rankings": [
-      { "character": "Seven", "tier": "Z" },
-      { "character": "Haze", "tier": "S" }
-    ]
-  }'`}</pre>
-
-        <h3>Response body</h3>
-        <p>Array of inserted rows, each with the following fields:</p>
-        <table>
-          <thead>
-            <tr>
-              <th>Field</th>
-              <th>Type</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>id</td>
-              <td>integer</td>
-              <td>Auto-generated row ID</td>
-            </tr>
-            <tr>
-              <td>user</td>
-              <td>string</td>
-              <td>Name of the user who submitted the rankings</td>
-            </tr>
-            <tr>
-              <td>character</td>
-              <td>string</td>
-              <td>One of the 44 valid Deadlock heroes</td>
-            </tr>
-            <tr>
-              <td>tier</td>
-              <td>string</td>
-              <td>One of: Z, S, A, B, C, D</td>
-            </tr>
-            <tr>
-              <td>date</td>
-              <td>string</td>
-              <td>Timestamp the row was inserted</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <h3>Responses</h3>
-        <ul>
-          <li><code>201</code> — returns an array of all inserted rows</li>
-          <li><code>400</code> — invalid user, character, or tier</li>
-          <li><code>500</code> — query failed</li>
-        </ul>
-      </section>
-
-      <section>
-        <h2>
-          <span className="method get">GET</span> /get_character/:character
-        </h2>
-        <p>Returns the average tier ranking for a specific hero.</p>
-
-        <h3>Path parameter</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Field</th>
-              <th>Type</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>character</td>
-              <td>string</td>
-              <td>One of the 44 valid Deadlock heroes</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <h3>Example</h3>
-        <pre>{`fetch('https://api--community-tierlist--xgjq82288nbr.code.run/get_character/Seven');`}</pre>
-        <pre>{`curl https://api--community-tierlist--xgjq82288nbr.code.run/get_character/Seven`}</pre>
-
-        <h3>Response body</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Field</th>
-              <th>Type</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>character</td>
-              <td>string</td>
-              <td>The requested hero</td>
-            </tr>
-            <tr>
-              <td>average_tier</td>
-              <td>string</td>
-              <td>Average tier value (1–6) across all submissions</td>
-            </tr>
-            <tr>
-              <td>count</td>
-              <td>string</td>
-              <td>Number of submissions for this hero</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <h3>Response</h3>
-        <pre>{`{
-  "character": "Seven",
-  "average_tier": "6.0000000000000000",
-  "count": "1"
-}`}</pre>
-
-        <h3>Responses</h3>
-        <ul>
-          <li><code>200</code> — average tier and submission count</li>
-          <li><code>400</code> — invalid character</li>
-          <li><code>404</code> — no rankings found for this character</li>
-          <li><code>500</code> — query failed</li>
-        </ul>
-      </section>
-
-      <section>
-        <h2>
-          <span className="method get">GET</span> /average_list
-        </h2>
-        <p>Returns the average tier ranking for every hero. Heroes with no submissions are still included, with a <code>null</code> average.</p>
-
-        <h3>Example</h3>
-        <pre>{`fetch('https://api--community-tierlist--xgjq82288nbr.code.run/average_list');`}</pre>
-        <pre>{`curl https://api--community-tierlist--xgjq82288nbr.code.run/average_list`}</pre>
-
-        <h3>Response body</h3>
-        <p>Array of one entry per hero (44 total):</p>
-        <table>
-          <thead>
-            <tr>
-              <th>Field</th>
-              <th>Type</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>character</td>
-              <td>string</td>
-              <td>Hero name</td>
-            </tr>
-            <tr>
-              <td>average_tier</td>
-              <td>string | null</td>
-              <td>Average tier value (1–6); <code>null</code> if the hero has no submissions</td>
-            </tr>
-            <tr>
-              <td>count</td>
-              <td>string</td>
-              <td>Number of submissions for this hero; <code>"0"</code> if the hero has no submissions</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <h3>Response</h3>
-        <pre>{`[
+  -H "${AUTH_HEADER}" \\
+  -d '{"character": "Seven", "tier": "Z"}'`],
+        responses: [
+          ['201', 'returns the inserted row'],
+          ['400', 'invalid character or tier'],
+          ['401', 'missing, expired or revoked token'],
+          ['429', 'more than 10 per minute'],
+          ['500', 'query failed'],
+        ],
+      },
+    ],
+  },
+  {
+    title: 'Community averages',
+    intro: 'Tier values are averaged on a 1-6 scale: D=1, C=2, B=3, A=4, S=5, Z=6.',
+    endpoints: [
+      {
+        method: 'GET',
+        path: '/average_list',
+        description: 'Average tier for every hero. Heroes with no rankings in the period are included with a null average.',
+        tables: [{
+          title: 'Query parameters (optional)',
+          rows: [
+            ['from', 'YYYY-MM-DD', 'Only count rankings on or after this day (UTC). Omit for the beginning.'],
+            ['to', 'YYYY-MM-DD', 'Only count rankings on or before this day (UTC). Omit for today.'],
+          ],
+        }, {
+          title: 'Response body (one entry per hero)',
+          rows: [
+            ['character', 'string', 'Hero name'],
+            ['average_tier', 'string | null', 'Average tier value (1-6); null if unranked in the period'],
+            ['count', 'string', 'Number of rankings counted'],
+          ],
+        }],
+        examples: [
+          `curl ${BASE}/average_list`,
+          `curl "${BASE}/average_list?from=2026-07-15&to=2026-09-30"`,
+        ],
+        response: `[
   { "character": "Abrams", "average_tier": null, "count": "0" },
-  { "character": "Haze", "average_tier": "5.2000000000000000", "count": "5" },
-  { "character": "Seven", "average_tier": "6.0000000000000000", "count": "1" }
-]`}</pre>
+  { "character": "Haze", "average_tier": "5.2000000000000000", "count": "5" }
+]`,
+        responses: [
+          ['200', 'averages for all heroes'],
+          ['400', 'invalid date, or from is after to'],
+          ['404', 'no rankings in the period'],
+          ['500', 'query failed'],
+        ],
+      },
+      {
+        method: 'GET',
+        path: '/get_character/:character',
+        description: 'Average tier for one hero across all time.',
+        tables: [{ title: 'Path parameter', rows: [['character', 'string', HERO_DESC]] }],
+        examples: [`curl ${BASE}/get_character/Seven`],
+        response: `{ "character": "Seven", "average_tier": "6.0000000000000000", "count": "1" }`,
+        responses: [
+          ['200', 'average tier and ranking count'],
+          ['400', 'invalid character'],
+          ['404', 'no rankings for this hero'],
+          ['500', 'query failed'],
+        ],
+      },
+    ],
+  },
+  {
+    title: 'Players',
+    endpoints: [
+      {
+        method: 'GET',
+        path: '/users/search',
+        description: 'Finds players whose username contains the search text (case-insensitive). Exact and prefix matches come first; at most 20 results.',
+        tables: [{
+          title: 'Query parameters',
+          rows: [['q', 'string', '1-20 letters and numbers']],
+        }, {
+          title: 'Response body (array)',
+          rows: [
+            ['username', 'string', 'Player username'],
+            ['created_at', 'string', 'When the account was created'],
+            ['heroes_ranked', 'string', 'Number of distinct heroes the player has ranked'],
+            ['last_submitted', 'string | null', 'Most recent submission, or null'],
+          ],
+        }],
+        examples: [`curl "${BASE}/users/search?q=nat"`],
+        responses: [
+          ['200', 'matching players (possibly an empty array)'],
+          ['400', 'invalid q'],
+          ['500', 'query failed'],
+        ],
+      },
+      {
+        method: 'GET',
+        path: '/users/:username/rankings',
+        description: 'A player’s latest tier for each hero they have ranked.',
+        tables: [{
+          title: 'Response body',
+          rows: [
+            ['username', 'string', 'Player username'],
+            ['last_updated', 'string | null', 'Most recent ranking, or null if none'],
+            ['rankings[].character', 'string', HERO_DESC],
+            ['rankings[].tier', 'string', TIER_DESC],
+            ['rankings[].date', 'string', 'When this ranking was submitted'],
+          ],
+        }],
+        examples: [`curl ${BASE}/users/nathan/rankings`],
+        response: `{
+  "username": "nathan",
+  "last_updated": "2026-11-20T18:04:11.000Z",
+  "rankings": [
+    { "character": "Haze", "tier": "S", "date": "2026-11-20T18:04:11.000Z" }
+  ]
+}`,
+        responses: [
+          ['200', 'the player’s rankings (possibly empty)'],
+          ['400', 'invalid username'],
+          ['404', 'no such player'],
+          ['500', 'query failed'],
+        ],
+      },
+    ],
+  },
+];
 
-        <h3>Responses</h3>
-        <ul>
-          <li><code>200</code> — average tier and submission count for all heroes</li>
-          <li><code>404</code> — no characters have been ranked</li>
-          <li><code>500</code> — query failed</li>
-        </ul>
-      </section>
+const slug = (method, path) => `${method}-${path}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+function Endpoint({ method, path, auth, description, tables = [], examples = [], response, responses }) {
+  return (
+    <section className="endpoint panel" id={slug(method, path)}>
+      <h3 className="endpoint-title">
+        <span className={`method ${method.toLowerCase()}`}>{method}</span>
+        <code>{path}</code>
+        {auth && <span className="auth-badge" title="Requires a session token">Signed in</span>}
+      </h3>
+      <p>{description}</p>
+
+      {tables.map(({ title, rows }) => (
+        <div key={title}>
+          <h4>{title}</h4>
+          <table>
+            <thead>
+              <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              {rows.map(([field, type, desc]) => (
+                <tr key={field}><td><code>{field}</code></td><td>{type}</td><td>{desc}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ))}
+
+      {examples.length > 0 && <h4>Example</h4>}
+      {examples.map((code) => <pre key={code}>{code}</pre>)}
+
+      {response && (
+        <>
+          <h4>Example response</h4>
+          <pre>{response}</pre>
+        </>
+      )}
+
+      <h4>Status codes</h4>
+      <ul className="status-list">
+        {responses.map(([code, desc]) => (
+          <li key={code}><code className={`code-${code[0]}`}>{code}</code> {desc}</li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function Docs() {
+  return (
+    <div className="page docs">
+      <header className="page-header">
+        <p className="eyebrow">For developers</p>
+        <h1 className="page-title">API Documentation</h1>
+        <p className="lede">
+          Base URL: <code>{BASE}</code>. All bodies are JSON. Signed-in endpoints need an{' '}
+          <code>Authorization: Bearer &lt;token&gt;</code> header from <code>/auth/login</code> or{' '}
+          <code>/auth/register</code>.
+        </p>
+      </header>
+
+      <div className="docs-layout">
+        <nav className="docs-toc panel" aria-label="Endpoints">
+          {GROUPS.map((group) => (
+            <div key={group.title}>
+              <p className="toc-group">{group.title}</p>
+              {group.endpoints.map(({ method, path }) => (
+                <a key={path} href={`#${slug(method, path)}`}>
+                  <span className={`method mini ${method.toLowerCase()}`}>{method}</span> {path}
+                </a>
+              ))}
+            </div>
+          ))}
+        </nav>
+
+        <div className="docs-body">
+          {GROUPS.map((group) => (
+            <section key={group.title} className="docs-group">
+              <h2 className="section-heading">{group.title}</h2>
+              {group.intro && <p className="muted">{group.intro}</p>}
+              {group.endpoints.map((ep) => <Endpoint key={ep.path} {...ep} />)}
+            </section>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

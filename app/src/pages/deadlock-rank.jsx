@@ -1,139 +1,73 @@
-import { useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../auth/context';
+import { apiFetch, errorMessage } from '../lib/api';
+import { HEROES, TIERS, TIER_META, emptyBoard } from '../lib/heroes';
+import { HeroCard, TierLabel } from '../components/TierList';
 import './Deadlock.css';
 
-const HEROES = [
-  'Abrams',
-  'Apollo',
-  'Baba',
-  'Bebop',
-  'Billy',
-  'Calico',
-  'Celeste',
-  'Deadman Danny',
-  'Doorman',
-  'Drifter',
-  'Dynamo',
-  'Graves',
-  'Grey Talon',
-  'Haze',
-  'Holliday',
-  'Infernus',
-  'Ivy',
-  'Kelvin',
-  'Lady Geist',
-  'Lash',
-  'Mcginnis',
-  'Mina',
-  'Mirage',
-  'Mo and Krill',
-  'Nurse Harrow',
-  'Paige',
-  'Paradox',
-  'Pocket',
-  'Rat King',
-  'Rem',
-  'Seven',
-  'Shiv',
-  'Silver',
-  'Sinclair',
-  'Solomon',
-  'Venator',
-  'Victor',
-  'Vindicta',
-  'Violet',
-  'Viscous',
-  'Vyper',
-  'Warden',
-  'Wraith',
-  'Yamato',
-];
-
-const TIERS = ['Z', 'S', 'A', 'B', 'C', 'D'];
-
-const TIER_COLORS = {
-  Z: '#ff6b6b',
-  S: '#ff9f43',
-  A: '#ffd32a',
-  B: '#0be881',
-  C: '#48dbfb',
-  D: '#a29bfe',
-};
-
-const API_URL = import.meta.env.PROD
-  ? import.meta.env.VITE_API_URL_PROD
-  : import.meta.env.VITE_API_URL_LOCAL;
-
-const USERNAME_PATTERN = /^[a-zA-Z0-9]{3,20}$/;
-
-function heroToFilename(hero) {
-  return hero.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '.png';
+function removeHero(board, hero) {
+  return Object.fromEntries(TIERS.map((t) => [t, board[t].filter((h) => h !== hero)]));
 }
 
-function HeroIcon({ hero, onDragEnter, insertBefore }) {
-  const handleDragStart = (e) => {
-    e.dataTransfer.setData('hero', hero);
-  };
+function DeadlockRank() {
+  const { user, token, ready, expire } = useAuth();
 
-  return (
-    <div
-      className={`hero-icon${insertBefore ? ' insert-before' : ''}`}
-      draggable
-      onDragStart={handleDragStart}
-      onDragEnter={onDragEnter}
-      title={hero}
-    >
-      <img
-        src={`/deadlock-icons/${heroToFilename(hero)}`}
-        alt={hero}
-        onError={(e) => { e.target.style.display = 'none'; }}
-      />
-      <span className="hero-name">{hero}</span>
-    </div>
-  );
-}
-
-function TierRow({ tier, heroes, onDrop, insertInfo, onDragEnterIcon, onDragEnterZone }) {
-  const handleDragOver = (e) => e.preventDefault();
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    const hero = e.dataTransfer.getData('hero');
-    if (hero) onDrop(hero, tier);
-  };
-
-  return (
-    <div className="tier-row">
-      <div className="tier-label" style={{ background: TIER_COLORS[tier] }}>
-        {tier}
-      </div>
-      <div
-        className="tier-drop-zone"
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
-        onDragEnter={onDragEnterZone}
-      >
-        {heroes.map((hero, i) => (
-          <HeroIcon
-            key={hero}
-            hero={hero}
-            onDragEnter={() => onDragEnterIcon(tier, i)}
-            insertBefore={insertInfo?.tier === tier && insertInfo?.index === i}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function RankHero() {
-  const [user, setUser] = useState('');
-  const [status, setStatus] = useState(null);
-
-  const initialTierList = Object.fromEntries(TIERS.map((t) => [t, []]));
-  const [tierList, setTierList] = useState(initialTierList);
-  const [bank, setBank] = useState([...HEROES]);
+  const [board, setBoard] = useState(emptyBoard);
+  const [bank, setBank] = useState(() => [...HEROES]);
   const [insertInfo, setInsertInfo] = useState(null);
+  const [selected, setSelected] = useState(null);
+  const [status, setStatus] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [loadedFor, setLoadedFor] = useState(null);
   const insertRef = useRef(null);
+
+  // Start from the signed-in user's saved rankings, once per account.
+  const username = user?.username;
+  useEffect(() => {
+    if (!username || loadedFor === username) return;
+    let cancelled = false;
+    apiFetch(`/users/${encodeURIComponent(username)}/rankings`).then((result) => {
+      if (cancelled) return;
+      setLoadedFor(username);
+      if (!result.ok || result.data.rankings.length === 0) return;
+      const next = emptyBoard();
+      for (const { character, tier } of result.data.rankings) {
+        if (next[tier] && HEROES.includes(character)) next[tier].push(character);
+      }
+      const placed = new Set(Object.values(next).flat());
+      setBoard(next);
+      setBank(HEROES.filter((h) => !placed.has(h)));
+      setStatus({ ok: true, message: 'Loaded your saved rankings. Rearrange and submit to update them.' });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [username, loadedFor]);
+
+  const placeHero = (hero, targetTier, index = null) => {
+    setBoard((prev) => {
+      const next = removeHero(prev, hero);
+      const row = [...next[targetTier]];
+      if (index === null) row.push(hero);
+      else row.splice(index, 0, hero);
+      next[targetTier] = row;
+      return next;
+    });
+    setBank((prev) => prev.filter((h) => h !== hero));
+    setSelected(null);
+  };
+
+  const returnToBank = (hero) => {
+    setBoard((prev) => removeHero(prev, hero));
+    setBank((prev) => (prev.includes(hero) ? prev : [...prev, hero]));
+    setSelected(null);
+  };
+
+  const clearInsert = () => {
+    insertRef.current = null;
+    setInsertInfo(null);
+  };
 
   const handleDragEnterIcon = (tier, index) => {
     const info = { tier, index };
@@ -142,149 +76,183 @@ function RankHero() {
   };
 
   const handleDragEnterZone = (tier) => {
-    if (insertRef.current?.tier !== tier) {
-      insertRef.current = null;
-      setInsertInfo(null);
-    }
+    if (insertRef.current?.tier !== tier) clearInsert();
   };
 
-  const handleDrop = (hero, targetTier) => {
-    const index = insertRef.current?.tier === targetTier ? insertRef.current.index : null;
-    insertRef.current = null;
-    setInsertInfo(null);
-
-    setTierList((prev) => {
-      const updated = {};
-      for (const t of TIERS) {
-        updated[t] = prev[t].filter((h) => h !== hero);
-      }
-      if (index !== null) {
-        const arr = [...updated[targetTier]];
-        arr.splice(index, 0, hero);
-        updated[targetTier] = arr;
-      } else {
-        updated[targetTier] = [...updated[targetTier], hero];
-      }
-      return updated;
-    });
-    setBank((prev) => prev.filter((h) => h !== hero));
-  };
-
-  const handleDropToBank = (e) => {
+  const handleDropOnTier = (e, tier) => {
     e.preventDefault();
     const hero = e.dataTransfer.getData('hero');
-    if (!hero) return;
-    setTierList((prev) => {
-      const updated = {};
-      for (const t of TIERS) {
-        updated[t] = prev[t].filter((h) => h !== hero);
-      }
-      return updated;
-    });
-    setBank((prev) => prev.includes(hero) ? prev : [...prev, hero]);
+    const index = insertRef.current?.tier === tier ? insertRef.current.index : null;
+    clearInsert();
+    if (hero) placeHero(hero, tier, index);
   };
 
-  const buildRankings = () => {
-    const rankings = [];
-    for (const t of TIERS) {
-      for (const hero of tierList[t]) {
-        rankings.push({ character: hero, tier: t });
-      }
-    }
-    return rankings;
-  };
-
-  const handleSubmit = async (e) => {
+  const handleDropOnBank = (e) => {
     e.preventDefault();
-    setStatus(null);
-
-    if (!USERNAME_PATTERN.test(user)) {
-      setStatus({
-        ok: false,
-        message: 'User must be 3-20 characters and contain only letters and numbers',
-      });
-      return;
-    }
-
-    const rankings = buildRankings();
-
-    if (rankings.length === 0) {
-      setStatus({ ok: false, message: 'Place at least one hero in the tier list before submitting' });
-      return;
-    }
-
-    try {
-      const res = await fetch(`${API_URL}/submit_list`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user, rankings }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setStatus({ ok: false, message: data.error || 'request failed' });
-        return;
-      }
-
-      setStatus({ ok: true, message: `Submitted ${data.length} hero rankings` });
-    } catch (err) {
-      setStatus({ ok: false, message: err.message });
-    }
+    clearInsert();
+    const hero = e.dataTransfer.getData('hero');
+    if (hero) returnToBank(hero);
   };
+
+  const startDrag = (hero) => (e) => {
+    e.dataTransfer.setData('hero', hero);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  // Click-to-place, for touch screens and keyboards: pick a hero, then a tier.
+  const toggleSelect = (hero) => setSelected((cur) => (cur === hero ? null : hero));
+
+  const clearBoard = () => {
+    setBoard(emptyBoard());
+    setBank([...HEROES]);
+    setSelected(null);
+    setStatus(null);
+  };
+
+  const placedCount = TIERS.reduce((n, t) => n + board[t].length, 0);
+
+  const handleSubmit = async () => {
+    setStatus(null);
+    const rankings = TIERS.flatMap((tier) => board[tier].map((character) => ({ character, tier })));
+    if (rankings.length === 0) {
+      setStatus({ ok: false, message: 'Place at least one hero in the tier list before submitting.' });
+      return;
+    }
+
+    setSubmitting(true);
+    const result = await apiFetch('/submit_list', { method: 'POST', body: { rankings }, token });
+    setSubmitting(false);
+
+    if (result.status === 401) {
+      expire();
+      return;
+    }
+    if (!result.ok) {
+      setStatus({ ok: false, message: errorMessage(result) });
+      return;
+    }
+    setStatus({ ok: true, message: `Sealed and submitted — ${result.data.length} heroes ranked.` });
+  };
+
+  if (!ready) {
+    return <div className="page"><p className="muted center">Checking your session…</p></div>;
+  }
+
+  if (!user) {
+    return (
+      <div className="page">
+        <section className="panel gate">
+          <p className="eyebrow">Members only</p>
+          <h1 className="page-title">Make your mark</h1>
+          <p className="lede">
+            Sign in to submit a tier list. Your rankings are saved to your name, count toward the
+            community average, and can be looked up by other players.
+          </p>
+          <Link to="/login" state={{ from: '/deadlock-rank' }} className="btn btn-brass">
+            Sign in or create an account
+          </Link>
+        </section>
+      </div>
+    );
+  }
 
   return (
-    <div className="deadlock-page">
-      <form className="rank-form" onSubmit={handleSubmit}>
-        <div className="field">
-          <label htmlFor="user">User</label>
-          <input
-            id="user"
-            type="text"
-            value={user}
-            onChange={(e) => setUser(e.target.value)}
-            minLength={3}
-            maxLength={20}
-            pattern="[a-zA-Z0-9]+"
-            title="3-20 characters: letters and numbers only"
-            required
-          />
+    <div className="page">
+      <header className="page-header">
+        <p className="eyebrow">Rank the heroes</p>
+        <h1 className="page-title">Your Tier List</h1>
+        <p className="lede">
+          Drag heroes onto a tier, or tap a hero and then a tier. Submitting again replaces your
+          earlier ranking for each hero you place.
+        </p>
+      </header>
+
+      <div className="toolbar panel">
+        <span className="toolbar-meta">
+          Signed in as <strong>{user.username}</strong> · {placedCount} / {HEROES.length} placed
+        </span>
+        <div className="toolbar-actions">
+          <button type="button" className="btn btn-ghost" onClick={clearBoard} disabled={placedCount === 0}>
+            Clear board
+          </button>
+          <button type="button" className="btn btn-brass" onClick={handleSubmit} disabled={submitting}>
+            {submitting ? 'Submitting…' : 'Submit rankings'}
+          </button>
         </div>
+      </div>
 
-        <button type="submit">Submit</button>
+      {status && (
+        <p className={`notice ${status.ok ? 'notice-ok' : 'notice-error'}`} role="status">{status.message}</p>
+      )}
+      {selected && (
+        <p className="notice notice-info" role="status">
+          <strong>{selected}</strong> selected — tap a tier to place, or the roster to remove.
+        </p>
+      )}
 
-        {status && (
-          <p className={`status ${status.ok ? 'ok' : 'error'}`}>{status.message}</p>
-        )}
-      </form>
+      <div className="tierlist">
+        {TIERS.map((tier) => (
+          <div
+            className={`tier-row${selected ? ' is-target' : ''}`}
+            key={tier}
+            style={{ '--tier-color': TIER_META[tier].color }}
+          >
+            <TierLabel tier={tier} />
+            <div
+              className="tier-zone droppable"
+              onDragOver={(e) => e.preventDefault()}
+              onDragEnter={() => handleDragEnterZone(tier)}
+              onDrop={(e) => handleDropOnTier(e, tier)}
+              onClick={() => selected && placeHero(selected, tier)}
+            >
+              {board[tier].length === 0 && <span className="tier-empty">Drop heroes here</span>}
+              {board[tier].map((hero, i) => (
+                <HeroCard
+                  key={hero}
+                  hero={hero}
+                  draggable
+                  selected={selected === hero}
+                  onDragStart={startDrag(hero)}
+                  onDragEnter={() => handleDragEnterIcon(tier, i)}
+                  insertBefore={insertInfo?.tier === tier && insertInfo?.index === i}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (selected && selected !== hero) placeHero(selected, tier, i);
+                    else toggleSelect(hero);
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
 
-      <div className="tierlist-section">
-        <div className="tierlist">
-          {TIERS.map((t) => (
-            <TierRow
-              key={t}
-              tier={t}
-              heroes={tierList[t]}
-              onDrop={handleDrop}
-              insertInfo={insertInfo}
-              onDragEnterIcon={handleDragEnterIcon}
-              onDragEnterZone={() => handleDragEnterZone(t)}
+      <section className="hero-bank-wrap">
+        <h3 className="bank-title">The Roster <span className="muted">({bank.length} unplaced)</span></h3>
+        <div
+          className="hero-bank droppable"
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={handleDropOnBank}
+          onClick={() => selected && returnToBank(selected)}
+        >
+          {bank.length === 0 && <span className="tier-empty">Every hero has been placed.</span>}
+          {bank.map((hero) => (
+            <HeroCard
+              key={hero}
+              hero={hero}
+              draggable
+              selected={selected === hero}
+              onDragStart={startDrag(hero)}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleSelect(hero);
+              }}
             />
           ))}
         </div>
-
-        <div
-          className="hero-bank"
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={handleDropToBank}
-        >
-          {bank.map((hero) => (
-            <HeroIcon key={hero} hero={hero} />
-          ))}
-        </div>
-      </div>
+      </section>
     </div>
   );
 }
 
-export default RankHero;
+export default DeadlockRank;
